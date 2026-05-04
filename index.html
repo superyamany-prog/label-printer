@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopify Label Printer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --accent: #e8ff4d;
+    --accent2: #4dffb4;
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --danger: #ff4d4d;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+  }
+  header .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  header .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  header .sep { flex: 1; }
+  #configBtn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: all .2s;
+  }
+  #configBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    height: calc(100vh - 61px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .sidebar-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-section h3 {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 12px;
+  }
+
+  /* Search */
+  .search-wrap { position: relative; }
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text-muted); }
+
+  #searchResults {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    z-index: 100;
+    max-height: 260px;
+    overflow-y: auto;
+    display: none;
+  }
+  #searchResults.open { display: block; }
+
+  .result-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .result-item:last-child { border-bottom: none; }
+  .result-item:hover { background: var(--border); }
+  .result-thumb {
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .result-thumb.placeholder {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .result-info { flex: 1; min-width: 0; }
+  .result-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-sku { font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+
+  /* Queue */
+  #queueList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #queueList:empty::after {
+    content: 'No products added yet.\ASearch above to add products.';
+    white-space: pre;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+    padding: 32px 16px;
+    line-height: 1.8;
+  }
+
+  .queue-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    position: relative;
+  }
+  .queue-item-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .queue-thumb {
+    width: 40px; height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .queue-thumb.placeholder {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .queue-title { font-size: 13px; font-weight: 500; line-height: 1.4; }
+  .queue-remove {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    flex-shrink: 0;
+    transition: color .2s;
+  }
+  .queue-remove:hover { color: var(--danger); }
+
+  /* Variant selector */
+  .variant-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .variant-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .variant-select {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 5px 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    outline: none;
+    min-width: 120px;
+  }
+  .qty-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .qty-btn {
+    background: var(--bg);
+    border: none;
+    color: var(--text);
+    width: 26px; height: 28px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .qty-btn:hover { background: var(--border); }
+  .qty-input {
+    background: var(--bg);
+    border: none;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    color: var(--text);
+    width: 40px;
+    text-align: center;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 0;
+    height: 28px;
+    outline: none;
+  }
+
+  /* Actions */
+  .sidebar-actions {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn {
+    padding: 11px 18px;
+    border-radius: var(--radius);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    width: 100%;
+    letter-spacing: .3px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0f0f0f;
+  }
+  .btn-primary:hover { background: #d4eb2e; }
+  .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* ── PREVIEW PANEL ── */
+  .preview-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .preview-toolbar {
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+  }
+  .preview-toolbar span {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .preview-toolbar .sep { flex: 1; }
+  #labelCount {
+    font-size: 11px;
+    color: var(--accent2);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  #previewArea {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px;
+    background: #1c1c1c;
+  }
+
+  #previewArea.empty {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
+  .empty-state p { font-size: 13px; line-height: 1.7; }
+
+  /* ── LABEL SHEET (PRINT PREVIEW) ── */
+  /* 210x297mm scaled for screen display */
+  #labelSheet {
+    background: white;
+    width: 794px; /* A4 at 96dpi approx */
+    min-height: 1123px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.5);
+    position: relative;
+    /* Padding matches label margins: 6mm left/right, 8mm top/bottom */
+    /* At 96dpi, 1mm ≈ 3.7795px */
+    padding: 30px 23px 30px 23px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, auto);
+    gap: 0;
+    align-content: start;
+  }
+
+  /* ── INDIVIDUAL LABEL ── */
+  .label {
+    /* 63.5mm × 70mm at 96dpi */
+    width: 240px;
+    height: 265px;
+    border: 0.5px dashed #ccc; /* guide line, won't print */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 6px 6px;
+    font-family: Arial, sans-serif; /* print-safe */
+    overflow: hidden;
+  }
+
+  .label-image {
+    width: 80px;
+    height: 70px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .label-image-placeholder {
+    width: 80px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+
+  .label-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    color: #111;
+    line-height: 1.3;
+    max-height: 38px;
+    overflow: hidden;
+    width: 100%;
+  }
+  .label-variant {
+    font-size: 9px;
+    text-align: center;
+    color: #444;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .label-price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #000;
+    text-align: center;
+  }
+  .label-barcode-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    width: 100%;
+  }
+  .label-barcode-wrap svg {
+    max-width: 100%;
+    height: 40px;
+  }
+  .label-sku {
+    font-size: 8px;
+    color: #555;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+  }
+
+  /* ── CONFIG MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    width: 480px;
+    max-width: 95vw;
+  }
+  .modal h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .modal p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .field .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .modal-actions .btn { flex: 1; }
+  .btn-cancel {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-cancel:hover { color: var(--text); }
+
+  /* ── STATUS / TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 2000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .3s;
+    max-width: 300px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.error { border-color: var(--danger); color: var(--danger); }
+  #toast.success { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── LOADING SPINNER ── */
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { background: white; }
+    header, .sidebar, .preview-toolbar, .modal-overlay, #toast { display: none !important; }
+    .app { display: block; height: auto; }
+    .preview-panel { display: block; }
+    #previewArea {
+      padding: 0;
+      background: white;
+      display: block;
+      overflow: visible;
+    }
+    #labelSheet {
+      box-shadow: none;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 8mm 6mm;
+    }
+    .label {
+      width: 63.5mm;
+      height: 70mm;
+      border: none; /* hide dashed guides when printing */
+      padding: 2mm 1.5mm;
+    }
+    .label-image { width: 20mm; height: 18mm; }
+    .label-image-placeholder { width: 20mm; height: 18mm; }
+    .label-title { font-size: 7pt; }
+    .label-variant { font-size: 6.5pt; }
+    .label-price { font-size: 11pt; }
+    .label-barcode-wrap svg { height: 10mm; }
+    .label-sku { font-size: 5.5pt; }
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- CONFIG MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Shopify API Configuration</h2>
+    <p>You only need to do this once. Your credentials are saved in your browser (local storage) and never sent anywhere except directly to your Shopify store.</p>
+
+    <div class="field">
+      <label>Store Domain</label>
+      <input type="text" id="cfgDomain" placeholder="your-store.myshopify.com" />
+      <div class="hint">Find this in Shopify Admin → Settings → Domains</div>
+    </div>
+
+    <div class="field">
+      <label>Access Token</label>
+      <input type="text" id="cfgToken" placeholder="shpat_xxxxxxxxxxxxxxxxxxxx" />
+      <div class="hint">
+        Create a Custom App in Shopify Admin → Settings → Apps → Develop Apps.<br>
+        Grant <strong>read_products</strong> permission, then copy the Admin API access token.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Save & Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div>
+    <div class="logo">Label Printer</div>
+    <div class="subtitle">Shopify Product Labels</div>
+  </div>
+  <div class="sep"></div>
+  <button id="configBtn" onclick="openModal()">⚙ Configure Store</button>
+</header>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Search -->
+    <div class="sidebar-section">
+      <h3>Search Products</h3>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Type product name…" autocomplete="off" />
+        <div id="searchResults"></div>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div class="sidebar-section" style="flex:1; display:flex; flex-direction:column; overflow:hidden; border-bottom:none;">
+      <h3>Label Queue</h3>
+    </div>
+    <div id="queueList"></div>
+
+    <!-- Actions -->
+    <div class="sidebar-actions">
+      <button class="btn btn-primary" id="generateBtn" onclick="generatePreview()" disabled>Generate Preview</button>
+      <button class="btn btn-secondary" onclick="clearQueue()">Clear Queue</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-toolbar">
+      <span>PRINT PREVIEW</span>
+      <div class="sep"></div>
+      <span id="labelCount">0 labels</span>
+      <button class="btn btn-primary" style="width:auto; padding: 8px 20px;" onclick="window.print()">🖨 Print</button>
+    </div>
+    <div id="previewArea" class="empty">
+      <div class="empty-state">
+        <div class="icon">🏷️</div>
+        <p>Add products from the left panel,<br>then click <strong>Generate Preview</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════
+let config = {
+  domain: localStorage.getItem('slp_domain') || '',
+  token: localStorage.getItem('slp_token') || ''
+};
+
+function openModal() {
+  document.getElementById('cfgDomain').value = config.domain;
+  document.getElementById('cfgToken').value = config.token;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function saveConfig() {
+  const domain = document.getElementById('cfgDomain').value.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const token = document.getElementById('cfgToken').value.trim();
+  if (!domain || !token) { toast('Please fill in both fields.', 'error'); return; }
+  config.domain = domain;
+  config.token = token;
+  localStorage.setItem('slp_domain', domain);
+  localStorage.setItem('slp_token', token);
+  closeModal();
+  toast('Store connected!', 'success');
+}
+
+// Auto-open config if not set
+window.addEventListener('DOMContentLoaded', () => {
+  if (!config.domain || !config.token) openModal();
+});
+
+// ═══════════════════════════════════════════════
+//  SHOPIFY API
+// ═══════════════════════════════════════════════
+async function shopifyFetch(path) {
+  if (!config.domain || !config.token) {
+    openModal();
+    throw new Error('Not configured');
+  }
+  const url = `https://${config.domain}/admin/api/2024-01/${path}`;
+  const res = await fetch(url, {
+    headers: {
+      'X-Shopify-Access-Token': config.token,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) throw new Error(`Shopify API error: ${res.status}`);
+  return res.json();
+}
+
+// ═══════════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════════
+let searchTimer = null;
+document.getElementById('searchInput').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  const q = this.value.trim();
+  if (q.length < 2) { closeResults(); return; }
+  searchTimer = setTimeout(() => doSearch(q), 350);
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) closeResults();
+});
+
+function closeResults() {
+  const el = document.getElementById('searchResults');
+  el.innerHTML = '';
+  el.classList.remove('open');
+}
+
+async function doSearch(q) {
+  const el = document.getElementById('searchResults');
+  el.innerHTML = '<div style="padding:12px 14px; color:var(--text-muted); font-size:12px;"><span class="spinner"></span> Searching…</div>';
+  el.classList.add('open');
+
+  try {
+    const data = await shopifyFetch(`products.json?title=${encodeURIComponent(q)}&limit=8&fields=id,title,variants,images`);
+    el.innerHTML = '';
+    if (!data.products.length) {
+      el.innerHTML = '<div style="padding:12px 14px; color:var(--text-muted); font-size:12px;">No products found.</div>';
+      return;
+    }
+    data.products.forEach(p => {
+      const img = p.images?.[0]?.src || null;
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.innerHTML = img
+        ? `<img class="result-thumb" src="${img}" loading="lazy">`
+        : `<div class="result-thumb placeholder">📦</div>`;
+      div.innerHTML += `<div class="result-info"><div class="result-title">${escHtml(p.title)}</div><div class="result-sku">${p.variants.length} variant${p.variants.length !== 1 ? 's' : ''}</div></div>`;
+      div.addEventListener('click', () => { addToQueue(p); closeResults(); document.getElementById('searchInput').value = ''; });
+      el.appendChild(div);
+    });
+  } catch (e) {
+    el.innerHTML = `<div style="padding:12px 14px; color:var(--danger); font-size:12px;">Error: ${e.message}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  QUEUE
+// ═══════════════════════════════════════════════
+let queue = []; // [{product, variantId, qty}]
+
+function addToQueue(product) {
+  // Add one entry per variant (user can adjust)
+  queue.push({ product, variantId: product.variants[0].id, qty: 1, uid: Date.now() + Math.random() });
+  renderQueue();
+  toast(`"${product.title}" added.`, 'success');
+}
+
+function renderQueue() {
+  const list = document.getElementById('queueList');
+  list.innerHTML = '';
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = queue.length === 0;
+
+  queue.forEach((item, idx) => {
+    const p = item.product;
+    const img = p.images?.[0]?.src || null;
+    const div = document.createElement('div');
+    div.className = 'queue-item';
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'queue-item-header';
+
+    if (img) {
+      headerDiv.innerHTML = `<img class="queue-thumb" src="${img}" loading="lazy">`;
+    } else {
+      headerDiv.innerHTML = `<div class="queue-thumb placeholder">📦</div>`;
+    }
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'queue-title';
+    titleDiv.textContent = p.title;
+    headerDiv.appendChild(titleDiv);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'queue-remove';
+    removeBtn.innerHTML = '×';
+    removeBtn.title = 'Remove';
+    removeBtn.onclick = () => { queue.splice(idx, 1); renderQueue(); };
+    headerDiv.appendChild(removeBtn);
+    div.appendChild(headerDiv);
+
+    // Variant selector
+    if (p.variants.length > 0) {
+      const vLabel = document.createElement('div');
+      vLabel.className = 'variant-label';
+      vLabel.textContent = 'Variant & Quantity';
+      div.appendChild(vLabel);
+
+      const row = document.createElement('div');
+      row.className = 'variant-row';
+
+      const sel = document.createElement('select');
+      sel.className = 'variant-select';
+      p.variants.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.title === 'Default Title' ? 'Default' : v.title;
+        if (v.id === item.variantId) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.onchange = () => { queue[idx].variantId = parseInt(sel.value); };
+      row.appendChild(sel);
+
+      // Qty
+      const qtyWrap = document.createElement('div');
+      qtyWrap.className = 'qty-wrap';
+
+      const minus = document.createElement('button');
+      minus.className = 'qty-btn';
+      minus.textContent = '−';
+      minus.onclick = () => {
+        if (queue[idx].qty > 1) { queue[idx].qty--; qtyInput.value = queue[idx].qty; }
+      };
+
+      const qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.className = 'qty-input';
+      qtyInput.value = item.qty;
+      qtyInput.min = 1;
+      qtyInput.onchange = () => {
+        queue[idx].qty = Math.max(1, parseInt(qtyInput.value) || 1);
+        qtyInput.value = queue[idx].qty;
+      };
+
+      const plus = document.createElement('button');
+      plus.className = 'qty-btn';
+      plus.textContent = '+';
+      plus.onclick = () => { queue[idx].qty++; qtyInput.value = queue[idx].qty; };
+
+      qtyWrap.appendChild(minus);
+      qtyWrap.appendChild(qtyInput);
+      qtyWrap.appendChild(plus);
+      row.appendChild(qtyWrap);
+      div.appendChild(row);
+    }
+
+    list.appendChild(div);
+  });
+}
+
+function clearQueue() {
+  queue = [];
+  renderQueue();
+  document.getElementById('previewArea').classList.add('empty');
+  document.getElementById('previewArea').innerHTML = `<div class="empty-state"><div class="icon">🏷️</div><p>Add products from the left panel,<br>then click <strong>Generate Preview</strong>.</p></div>`;
+  document.getElementById('labelCount').textContent = '0 labels';
+}
+
+// ═══════════════════════════════════════════════
+//  BARCODE DETECTION
+// ═══════════════════════════════════════════════
+function detectBarcodeFormat(value) {
+  if (!value) return null;
+  const v = value.trim();
+  // EAN-13: exactly 13 digits
+  if (/^\d{13}$/.test(v)) return 'EAN13';
+  // EAN-8: exactly 8 digits
+  if (/^\d{8}$/.test(v)) return 'EAN8';
+  // UPC-A: exactly 12 digits
+  if (/^\d{12}$/.test(v)) return 'UPC';
+  // Code 128: anything else printable
+  if (/^[\x20-\x7E]+$/.test(v)) return 'CODE128';
+  return 'CODE128';
+}
+
+function renderBarcode(containerId, value) {
+  if (!value) return false;
+  const format = detectBarcodeFormat(value);
+  if (!format) return false;
+  try {
+    JsBarcode(`#${containerId}`, value, {
+      format,
+      width: 1.5,
+      height: 36,
+      displayValue: false,
+      margin: 0,
+      background: 'transparent',
+      lineColor: '#000'
+    });
+    return true;
+  } catch (e) {
+    // Fallback to CODE128 if format fails
+    try {
+      JsBarcode(`#${containerId}`, value, { format: 'CODE128', width: 1.2, height: 36, displayValue: false, margin: 0, background: 'transparent', lineColor: '#000' });
+      return true;
+    } catch(e2) { return false; }
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  GENERATE PREVIEW
+// ═══════════════════════════════════════════════
+function generatePreview() {
+  if (!queue.length) return;
+
+  // Build flat list of labels
+  const labels = [];
+  queue.forEach(item => {
+    const p = item.product;
+    const variant = p.variants.find(v => v.id == item.variantId) || p.variants[0];
+    const img = p.images?.[0]?.src || null;
+
+    for (let i = 0; i < item.qty; i++) {
+      labels.push({
+        title: p.title,
+        variantTitle: variant.title === 'Default Title' ? '' : variant.title,
+        price: variant.price,
+        barcode: variant.barcode || variant.sku || '',
+        sku: variant.sku || '',
+        img
+      });
+    }
+  });
+
+  const area = document.getElementById('previewArea');
+  area.classList.remove('empty');
+  document.getElementById('labelCount').textContent = `${labels.length} label${labels.length !== 1 ? 's' : ''}`;
+
+  // Build sheet HTML
+  area.innerHTML = `<div id="labelSheet"></div>`;
+  const sheet = document.getElementById('labelSheet');
+
+  labels.forEach((lbl, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'label';
+
+    // Image
+    if (lbl.img) {
+      const imgEl = document.createElement('img');
+      imgEl.className = 'label-image';
+      imgEl.src = lbl.img;
+      imgEl.loading = 'lazy';
+      cell.appendChild(imgEl);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'label-image-placeholder';
+      ph.textContent = '📦';
+      cell.appendChild(ph);
+    }
+
+    // Title
+    const titleEl = document.createElement('div');
+    titleEl.className = 'label-title';
+    titleEl.textContent = lbl.title;
+    cell.appendChild(titleEl);
+
+    // Variant
+    if (lbl.variantTitle) {
+      const vEl = document.createElement('div');
+      vEl.className = 'label-variant';
+      vEl.textContent = lbl.variantTitle;
+      cell.appendChild(vEl);
+    }
+
+    // Price
+    const priceEl = document.createElement('div');
+    priceEl.className = 'label-price';
+    priceEl.textContent = lbl.price ? formatPrice(lbl.price) : '';
+    cell.appendChild(priceEl);
+
+    // Barcode
+    const bcWrap = document.createElement('div');
+    bcWrap.className = 'label-barcode-wrap';
+
+    const bcId = `bc_${i}_${Date.now()}`;
+    const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgEl.id = bcId;
+    bcWrap.appendChild(svgEl);
+
+    if (lbl.barcode) {
+      const skuEl = document.createElement('div');
+      skuEl.className = 'label-sku';
+      skuEl.textContent = lbl.barcode;
+      bcWrap.appendChild(skuEl);
+    } else if (lbl.sku) {
+      const skuEl = document.createElement('div');
+      skuEl.className = 'label-sku';
+      skuEl.textContent = `SKU: ${lbl.sku}`;
+      bcWrap.appendChild(skuEl);
+    }
+
+    cell.appendChild(bcWrap);
+    sheet.appendChild(cell);
+
+    // Render barcode after DOM insertion
+    if (lbl.barcode) {
+      setTimeout(() => renderBarcode(bcId, lbl.barcode), 50);
+    }
+  });
+
+  toast(`${labels.length} label${labels.length !== 1 ? 's' : ''} generated — ready to print.`, 'success');
+}
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function formatPrice(p) {
+  const n = parseFloat(p);
+  if (isNaN(n)) return p;
+  return n.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer = null;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+}
+</script>
+</body>
+</html>
