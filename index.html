@@ -9,27 +9,14 @@
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
   :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --surface2: #242424;
-    --border: #2e2e2e;
-    --accent: #e8ff4d;
-    --accent2: #4dffb4;
-    --text: #f0f0f0;
-    --text-muted: #888;
-    --danger: #ff4d4d;
-    --radius: 6px;
+    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #2e2e2e;
+    --accent: #e8ff4d; --accent2: #4dffb4; --text: #f0f0f0; --text-muted: #888;
+    --danger: #ff4d4d; --radius: 6px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 18px 32px;
-    display: flex; align-items: center; gap: 14px;
-    background: var(--surface);
-  }
+  header { border-bottom: 1px solid var(--border); padding: 18px 32px; display: flex; align-items: center; gap: 14px; background: var(--surface); }
   header .logo { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
   header .subtitle { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
   header .sep { flex: 1; }
@@ -47,7 +34,7 @@
   .search-wrap input:focus { border-color: var(--accent); }
   .search-wrap input::placeholder { color: var(--text-muted); }
 
-  #searchResults { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); z-index: 100; max-height: 260px; overflow-y: auto; display: none; }
+  #searchResults { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); z-index: 100; max-height: 260px; overflow-y: auto; display: none; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
   #searchResults.open { display: block; }
 
   .result-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .15s; }
@@ -57,21 +44,21 @@
   .result-thumb.placeholder { display: flex; align-items: center; justify-content: center; font-size: 18px; }
   .result-info { flex: 1; min-width: 0; }
   .result-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .result-sku { font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  .result-meta { font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
 
   #queueList { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
   #queueList:empty::after { content: 'No products added yet.\ASearch above to add products.'; white-space: pre; color: var(--text-muted); font-size: 12px; text-align: center; padding: 32px 16px; line-height: 1.8; }
 
-  .queue-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; position: relative; }
+  .queue-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
   .queue-item-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
   .queue-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: var(--bg); flex-shrink: 0; }
   .queue-thumb.placeholder { display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .queue-title { font-size: 13px; font-weight: 500; line-height: 1.4; }
+  .queue-title { font-size: 13px; font-weight: 500; line-height: 1.4; flex: 1; }
   .queue-remove { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 0 4px; flex-shrink: 0; transition: color .2s; }
   .queue-remove:hover { color: var(--danger); }
 
   .variant-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
-  .variant-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .variant-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .variant-select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 12px; padding: 5px 8px; font-family: 'IBM Plex Sans', sans-serif; outline: none; min-width: 120px; }
   .qty-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
   .qty-btn { background: var(--bg); border: none; color: var(--text); width: 26px; height: 28px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
@@ -79,14 +66,14 @@
   .qty-input { background: var(--bg); border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border); color: var(--text); width: 40px; text-align: center; font-size: 12px; font-family: 'IBM Plex Mono', monospace; padding: 0; height: 28px; outline: none; }
 
   .sidebar-actions { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-  .btn { padding: 11px 18px; border-radius: var(--radius); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; width: 100%; letter-spacing: .3px; }
+  .btn { padding: 11px 18px; border-radius: var(--radius); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; width: 100%; }
   .btn-primary { background: var(--accent); color: #0f0f0f; }
   .btn-primary:hover { background: #d4eb2e; }
   .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
   .btn-secondary { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
   .btn-secondary:hover { color: var(--text); border-color: var(--text-muted); }
 
-  .preview-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+  .preview-panel { display: flex; flex-direction: column; overflow: hidden; }
   .preview-toolbar { padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--surface); }
   .preview-toolbar span { font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
   .preview-toolbar .sep { flex: 1; }
@@ -98,31 +85,32 @@
   .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
   .empty-state p { font-size: 13px; line-height: 1.7; }
 
+  /* Label sheet - pixel dimensions match 210×297mm at 96dpi with your margins */
   #labelSheet {
     background: white;
-    width: 794px;
-    min-height: 1123px;
+    width: 794px; min-height: 1123px;
     box-shadow: 0 8px 40px rgba(0,0,0,.5);
-    padding: 30px 23px 30px 23px;
+    padding: 30px 23px; /* 8mm top/bottom, 6mm left/right */
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(4, auto);
+    grid-template-columns: repeat(3, 240px);
+    grid-template-rows: repeat(4, 265px);
     gap: 0;
     align-content: start;
   }
 
+  /* Each label: 63.5mm × 70mm */
   .label {
     width: 240px; height: 265px;
-    border: 0.5px dashed #ccc;
+    border: 0.5px dashed #ccc; /* guide line — hidden at print */
     display: flex; flex-direction: column;
     align-items: center; justify-content: space-between;
     padding: 8px 6px 6px;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
   }
   .label-image { width: 80px; height: 70px; object-fit: contain; flex-shrink: 0; }
   .label-image-placeholder { width: 80px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
-  .label-title { font-size: 10px; font-weight: 700; text-align: center; color: #111; line-height: 1.3; max-height: 38px; overflow: hidden; width: 100%; }
+  .label-title { font-size: 10px; font-weight: 700; text-align: center; color: #111; line-height: 1.3; max-height: 40px; overflow: hidden; width: 100%; }
   .label-variant { font-size: 9px; text-align: center; color: #444; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .label-price { font-size: 15px; font-weight: 700; color: #000; text-align: center; }
   .label-barcode-wrap { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; }
@@ -134,7 +122,7 @@
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px; width: 500px; max-width: 95vw; }
   .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-  .modal .modal-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+  .modal-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 6px; }
   .field input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 13px; outline: none; transition: border-color .2s; }
@@ -143,9 +131,8 @@
   .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
   .modal-actions .btn { flex: 1; }
   .btn-cancel { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
-  .btn-cancel:hover { color: var(--text); }
 
-  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; color: var(--text); z-index: 2000; transform: translateY(80px); opacity: 0; transition: all .3s; max-width: 300px; }
+  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; color: var(--text); z-index: 2000; transform: translateY(80px); opacity: 0; transition: all .3s; max-width: 320px; }
   #toast.show { transform: translateY(0); opacity: 1; }
   #toast.error { border-color: var(--danger); color: var(--danger); }
   #toast.success { border-color: var(--accent2); color: var(--accent2); }
@@ -153,13 +140,14 @@
   .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── PRINT ── */
   @media print {
     body { background: white; }
     header, .sidebar, .preview-toolbar, .modal-overlay, #toast { display: none !important; }
     .app { display: block; height: auto; }
     .preview-panel { display: block; }
     #previewArea { padding: 0; background: white; display: block; overflow: visible; }
-    #labelSheet { box-shadow: none; width: 210mm; min-height: 297mm; padding: 8mm 6mm; }
+    #labelSheet { box-shadow: none; width: 210mm; min-height: 297mm; padding: 8mm 6mm; grid-template-columns: repeat(3, 63.5mm); grid-template-rows: repeat(4, 70mm); }
     .label { width: 63.5mm; height: 70mm; border: none; padding: 2mm 1.5mm; }
     .label-image { width: 20mm; height: 18mm; }
     .label-image-placeholder { width: 20mm; height: 18mm; }
@@ -177,12 +165,12 @@
 <!-- CONFIG MODAL -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h2>Worker URL Configuration</h2>
-    <p class="modal-desc">Enter the URL of your Cloudflare Worker. Your Shopify credentials stay inside the Worker — this tool never sees them directly.</p>
+    <h2>Cloudflare Worker URL</h2>
+    <p class="modal-desc">Enter the URL of your deployed Cloudflare Worker. Your Shopify credentials stay inside the Worker — this tool only talks to the Worker.</p>
     <div class="field">
-      <label>Cloudflare Worker URL</label>
+      <label>Worker URL</label>
       <input type="text" id="cfgWorkerUrl" placeholder="https://your-worker.your-subdomain.workers.dev" />
-      <div class="hint">Found in your Cloudflare Workers dashboard after deploying. Ends in <strong>.workers.dev</strong></div>
+      <div class="hint">Found in your Cloudflare Workers dashboard. Ends in <strong>.workers.dev</strong></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
@@ -202,6 +190,7 @@
 </header>
 
 <div class="app">
+
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-section">
@@ -211,10 +200,12 @@
         <div id="searchResults"></div>
       </div>
     </div>
+
     <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden;border-bottom:none;">
       <h3>Label Queue</h3>
     </div>
     <div id="queueList"></div>
+
     <div class="sidebar-actions">
       <button class="btn btn-primary" id="generateBtn" onclick="generatePreview()" disabled>Generate Preview</button>
       <button class="btn btn-secondary" onclick="clearQueue()">Clear Queue</button>
@@ -236,13 +227,13 @@
       </div>
     </div>
   </div>
-</div>
 
+</div>
 <div id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════════════
-//  CONFIG  — only stores the Worker URL
+//  CONFIG
 // ═══════════════════════════════════════════════
 let workerUrl = localStorage.getItem('slp_worker_url') || '';
 
@@ -254,11 +245,11 @@ function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
 }
 function saveConfig() {
-  let url = document.getElementById('cfgWorkerUrl').value.trim().replace(/\/$/, '');
-  if (!url) { toast('Please enter your Worker URL.', 'error'); return; }
-  if (!url.startsWith('http')) { toast('URL must start with https://', 'error'); return; }
-  workerUrl = url;
-  localStorage.setItem('slp_worker_url', url);
+  let u = document.getElementById('cfgWorkerUrl').value.trim().replace(/\/$/, '');
+  if (!u) { toast('Please enter your Worker URL.', 'error'); return; }
+  if (!u.startsWith('http')) { toast('URL must start with https://', 'error'); return; }
+  workerUrl = u;
+  localStorage.setItem('slp_worker_url', u);
   closeModal();
   toast('Worker connected!', 'success');
 }
@@ -268,43 +259,52 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ═══════════════════════════════════════════════
-//  API — calls the Worker, not Shopify directly
+//  API — talks to the Cloudflare Worker only
 // ═══════════════════════════════════════════════
-async function workerFetch(path) {
+async function workerGet(path) {
   if (!workerUrl) { openModal(); throw new Error('Worker URL not configured'); }
   const res = await fetch(`${workerUrl}${path}`);
-  if (!res.ok) throw new Error(`Worker error: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
 }
 
 // ═══════════════════════════════════════════════
 //  SEARCH
 // ═══════════════════════════════════════════════
 let searchTimer = null;
+
 document.getElementById('searchInput').addEventListener('input', function () {
   clearTimeout(searchTimer);
   const q = this.value.trim();
   if (q.length < 2) { closeResults(); return; }
   searchTimer = setTimeout(() => doSearch(q), 350);
 });
-document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) closeResults(); });
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) closeResults();
+});
 
 function closeResults() {
   const el = document.getElementById('searchResults');
-  el.innerHTML = ''; el.classList.remove('open');
+  el.innerHTML = '';
+  el.classList.remove('open');
 }
 
 async function doSearch(q) {
   const el = document.getElementById('searchResults');
   el.innerHTML = '<div style="padding:12px 14px;color:var(--text-muted);font-size:12px;"><span class="spinner"></span> Searching…</div>';
   el.classList.add('open');
+
   try {
-    const data = await workerFetch(`/search?q=${encodeURIComponent(q)}`);
+    const data = await workerGet(`/search?q=${encodeURIComponent(q)}`);
     el.innerHTML = '';
-    if (!data.products || !data.products.length) {
+
+    if (!data.products || data.products.length === 0) {
       el.innerHTML = '<div style="padding:12px 14px;color:var(--text-muted);font-size:12px;">No products found.</div>';
       return;
     }
+
     data.products.forEach(p => {
       const img = p.images?.[0]?.src || null;
       const div = document.createElement('div');
@@ -312,10 +312,19 @@ async function doSearch(q) {
       div.innerHTML = img
         ? `<img class="result-thumb" src="${img}" loading="lazy">`
         : `<div class="result-thumb placeholder">📦</div>`;
-      div.innerHTML += `<div class="result-info"><div class="result-title">${escHtml(p.title)}</div><div class="result-sku">${p.variants.length} variant${p.variants.length !== 1 ? 's' : ''}</div></div>`;
-      div.addEventListener('click', () => { addToQueue(p); closeResults(); document.getElementById('searchInput').value = ''; });
+      div.innerHTML += `
+        <div class="result-info">
+          <div class="result-title">${escHtml(p.title)}</div>
+          <div class="result-meta">${p.variants.length} variant${p.variants.length !== 1 ? 's' : ''}</div>
+        </div>`;
+      div.addEventListener('click', () => {
+        addToQueue(p);
+        closeResults();
+        document.getElementById('searchInput').value = '';
+      });
       el.appendChild(div);
     });
+
   } catch (e) {
     el.innerHTML = `<div style="padding:12px 14px;color:var(--danger);font-size:12px;">Error: ${e.message}</div>`;
   }
@@ -327,7 +336,13 @@ async function doSearch(q) {
 let queue = [];
 
 function addToQueue(product) {
-  queue.push({ product, variantId: product.variants[0].id, qty: 1, uid: Date.now() + Math.random() });
+  // Prevent exact duplicate (same product id already in queue)
+  const alreadyIn = queue.some(item => item.product.id === product.id);
+  if (alreadyIn) {
+    toast(`"${product.title}" is already in the queue.`, '');
+    return;
+  }
+  queue.push({ product, variantId: product.variants[0].id, qty: 1 });
   renderQueue();
   toast(`"${product.title}" added.`, 'success');
 }
@@ -340,95 +355,124 @@ function renderQueue() {
   queue.forEach((item, idx) => {
     const p = item.product;
     const img = p.images?.[0]?.src || null;
+
     const div = document.createElement('div');
     div.className = 'queue-item';
 
-    const headerDiv = document.createElement('div');
-    headerDiv.className = 'queue-item-header';
-    headerDiv.innerHTML = img
+    // Header row
+    const header = document.createElement('div');
+    header.className = 'queue-item-header';
+    header.innerHTML = img
       ? `<img class="queue-thumb" src="${img}" loading="lazy">`
       : `<div class="queue-thumb placeholder">📦</div>`;
 
-    const titleDiv = document.createElement('div');
-    titleDiv.className = 'queue-title';
-    titleDiv.textContent = p.title;
-    headerDiv.appendChild(titleDiv);
+    const titleEl = document.createElement('div');
+    titleEl.className = 'queue-title';
+    titleEl.textContent = p.title;
+    header.appendChild(titleEl);
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'queue-remove';
     removeBtn.innerHTML = '×';
+    removeBtn.title = 'Remove';
     removeBtn.onclick = () => { queue.splice(idx, 1); renderQueue(); };
-    headerDiv.appendChild(removeBtn);
-    div.appendChild(headerDiv);
+    header.appendChild(removeBtn);
+    div.appendChild(header);
 
-    if (p.variants.length > 0) {
-      const vLabel = document.createElement('div');
-      vLabel.className = 'variant-label';
-      vLabel.textContent = 'Variant & Quantity';
-      div.appendChild(vLabel);
+    // Variant + qty row
+    const vLabel = document.createElement('div');
+    vLabel.className = 'variant-label';
+    vLabel.textContent = 'Variant & Quantity';
+    div.appendChild(vLabel);
 
-      const row = document.createElement('div');
-      row.className = 'variant-row';
+    const row = document.createElement('div');
+    row.className = 'variant-row';
 
-      const sel = document.createElement('select');
-      sel.className = 'variant-select';
-      p.variants.forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v.id;
-        opt.textContent = v.title === 'Default Title' ? 'Default' : v.title;
-        if (v.id === item.variantId) opt.selected = true;
-        sel.appendChild(opt);
-      });
-      sel.onchange = () => { queue[idx].variantId = parseInt(sel.value); };
-      row.appendChild(sel);
+    // Variant selector
+    const sel = document.createElement('select');
+    sel.className = 'variant-select';
+    p.variants.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = v.title === 'Default Title' ? 'Default' : v.title;
+      if (v.id === item.variantId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = () => { queue[idx].variantId = parseInt(sel.value, 10); };
+    row.appendChild(sel);
 
-      const qtyWrap = document.createElement('div');
-      qtyWrap.className = 'qty-wrap';
-      const minus = document.createElement('button');
-      minus.className = 'qty-btn'; minus.textContent = '−';
-      const qtyInput = document.createElement('input');
-      qtyInput.type = 'number'; qtyInput.className = 'qty-input'; qtyInput.value = item.qty; qtyInput.min = 1;
-      const plus = document.createElement('button');
-      plus.className = 'qty-btn'; plus.textContent = '+';
+    // Qty stepper
+    const qtyWrap = document.createElement('div');
+    qtyWrap.className = 'qty-wrap';
 
-      minus.onclick = () => { if (queue[idx].qty > 1) { queue[idx].qty--; qtyInput.value = queue[idx].qty; } };
-      plus.onclick = () => { queue[idx].qty++; qtyInput.value = queue[idx].qty; };
-      qtyInput.onchange = () => { queue[idx].qty = Math.max(1, parseInt(qtyInput.value) || 1); qtyInput.value = queue[idx].qty; };
+    const minus = document.createElement('button');
+    minus.className = 'qty-btn'; minus.textContent = '−';
 
-      qtyWrap.appendChild(minus); qtyWrap.appendChild(qtyInput); qtyWrap.appendChild(plus);
-      row.appendChild(qtyWrap);
-      div.appendChild(row);
-    }
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'number'; qtyInput.className = 'qty-input';
+    qtyInput.value = item.qty; qtyInput.min = 1;
+
+    const plus = document.createElement('button');
+    plus.className = 'qty-btn'; plus.textContent = '+';
+
+    minus.onclick = () => { if (queue[idx].qty > 1) { queue[idx].qty--; qtyInput.value = queue[idx].qty; } };
+    plus.onclick = () => { queue[idx].qty++; qtyInput.value = queue[idx].qty; };
+    qtyInput.onchange = () => {
+      queue[idx].qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+      qtyInput.value = queue[idx].qty;
+    };
+
+    qtyWrap.appendChild(minus); qtyWrap.appendChild(qtyInput); qtyWrap.appendChild(plus);
+    row.appendChild(qtyWrap);
+    div.appendChild(row);
     list.appendChild(div);
   });
 }
 
 function clearQueue() {
-  queue = []; renderQueue();
-  document.getElementById('previewArea').classList.add('empty');
-  document.getElementById('previewArea').innerHTML = `<div class="empty-state"><div class="icon">🏷️</div><p>Add products from the left panel,<br>then click <strong>Generate Preview</strong>.</p></div>`;
+  queue = [];
+  renderQueue();
+  resetPreview();
+}
+
+function resetPreview() {
+  const area = document.getElementById('previewArea');
+  area.className = 'empty';
+  area.innerHTML = `<div class="empty-state"><div class="icon">🏷️</div><p>Add products from the left panel,<br>then click <strong>Generate Preview</strong>.</p></div>`;
   document.getElementById('labelCount').textContent = '0 labels';
 }
 
 // ═══════════════════════════════════════════════
-//  BARCODE
+//  BARCODE — auto-detects format
 // ═══════════════════════════════════════════════
-function detectBarcodeFormat(v) {
+function detectFormat(v) {
   if (!v) return null;
   v = v.trim();
   if (/^\d{13}$/.test(v)) return 'EAN13';
   if (/^\d{8}$/.test(v)) return 'EAN8';
   if (/^\d{12}$/.test(v)) return 'UPC';
   if (/^[\x20-\x7E]+$/.test(v)) return 'CODE128';
-  return 'CODE128';
+  return null;
 }
-function renderBarcode(id, value) {
+
+function renderBarcode(svgId, value) {
   if (!value) return;
-  const fmt = detectBarcodeFormat(value);
+  const fmt = detectFormat(value);
+  if (!fmt) return;
   try {
-    JsBarcode(`#${id}`, value, { format: fmt, width: 1.5, height: 36, displayValue: false, margin: 0, background: 'transparent', lineColor: '#000' });
+    JsBarcode(`#${svgId}`, value, {
+      format: fmt, width: 1.5, height: 36,
+      displayValue: false, margin: 0,
+      background: 'transparent', lineColor: '#000',
+    });
   } catch {
-    try { JsBarcode(`#${id}`, value, { format: 'CODE128', width: 1.2, height: 36, displayValue: false, margin: 0, background: 'transparent', lineColor: '#000' }); } catch {}
+    try {
+      JsBarcode(`#${svgId}`, value, {
+        format: 'CODE128', width: 1.2, height: 36,
+        displayValue: false, margin: 0,
+        background: 'transparent', lineColor: '#000',
+      });
+    } catch {}
   }
 }
 
@@ -437,74 +481,96 @@ function renderBarcode(id, value) {
 // ═══════════════════════════════════════════════
 function generatePreview() {
   if (!queue.length) return;
+
+  // Build flat label list
   const labels = [];
   queue.forEach(item => {
     const p = item.product;
-    const variant = p.variants.find(v => v.id == item.variantId) || p.variants[0];
+    const variant = p.variants.find(v => v.id === item.variantId) || p.variants[0];
     const img = p.images?.[0]?.src || null;
     for (let i = 0; i < item.qty; i++) {
-      labels.push({ title: p.title, variantTitle: variant.title === 'Default Title' ? '' : variant.title, price: variant.price, barcode: variant.barcode || variant.sku || '', sku: variant.sku || '', img });
+      labels.push({
+        title: p.title,
+        variantTitle: variant.title === 'Default Title' ? '' : variant.title,
+        price: variant.price,
+        barcode: variant.barcode || '',
+        sku: variant.sku || '',
+        img,
+      });
     }
   });
 
   const area = document.getElementById('previewArea');
-  area.classList.remove('empty');
+  area.className = '';
   document.getElementById('labelCount').textContent = `${labels.length} label${labels.length !== 1 ? 's' : ''}`;
-  area.innerHTML = `<div id="labelSheet"></div>`;
+  area.innerHTML = '<div id="labelSheet"></div>';
   const sheet = document.getElementById('labelSheet');
 
   labels.forEach((lbl, i) => {
     const cell = document.createElement('div');
     cell.className = 'label';
 
+    // Image
     if (lbl.img) {
       const imgEl = document.createElement('img');
-      imgEl.className = 'label-image'; imgEl.src = lbl.img; imgEl.loading = 'lazy';
+      imgEl.className = 'label-image';
+      imgEl.src = lbl.img;
+      imgEl.loading = 'lazy';
       cell.appendChild(imgEl);
     } else {
       const ph = document.createElement('div');
-      ph.className = 'label-image-placeholder'; ph.textContent = '📦';
+      ph.className = 'label-image-placeholder';
+      ph.textContent = '📦';
       cell.appendChild(ph);
     }
 
+    // Title
     const titleEl = document.createElement('div');
-    titleEl.className = 'label-title'; titleEl.textContent = lbl.title;
+    titleEl.className = 'label-title';
+    titleEl.textContent = lbl.title;
     cell.appendChild(titleEl);
 
+    // Variant
     if (lbl.variantTitle) {
       const vEl = document.createElement('div');
-      vEl.className = 'label-variant'; vEl.textContent = lbl.variantTitle;
+      vEl.className = 'label-variant';
+      vEl.textContent = lbl.variantTitle;
       cell.appendChild(vEl);
     }
 
+    // Price
     const priceEl = document.createElement('div');
     priceEl.className = 'label-price';
     priceEl.textContent = lbl.price ? formatPrice(lbl.price) : '';
     cell.appendChild(priceEl);
 
+    // Barcode
     const bcWrap = document.createElement('div');
     bcWrap.className = 'label-barcode-wrap';
-    const bcId = `bc_${i}_${Date.now()}`;
+
+    const svgId = `bc_${i}`;
     const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgEl.id = bcId;
+    svgEl.id = svgId;
     bcWrap.appendChild(svgEl);
 
-    if (lbl.barcode) {
+    // Show barcode number or SKU below
+    const codeText = lbl.barcode || (lbl.sku ? `SKU: ${lbl.sku}` : '');
+    if (codeText) {
       const skuEl = document.createElement('div');
-      skuEl.className = 'label-sku'; skuEl.textContent = lbl.barcode;
-      bcWrap.appendChild(skuEl);
-    } else if (lbl.sku) {
-      const skuEl = document.createElement('div');
-      skuEl.className = 'label-sku'; skuEl.textContent = `SKU: ${lbl.sku}`;
+      skuEl.className = 'label-sku';
+      skuEl.textContent = codeText;
       bcWrap.appendChild(skuEl);
     }
 
     cell.appendChild(bcWrap);
     sheet.appendChild(cell);
-    if (lbl.barcode) setTimeout(() => renderBarcode(bcId, lbl.barcode), 50);
+
+    // Render barcode after element is in DOM
+    const bcValue = lbl.barcode || lbl.sku;
+    if (bcValue) setTimeout(() => renderBarcode(svgId, bcValue), 60);
   });
 
-  toast(`${labels.length} label${labels.length !== 1 ? 's' : ''} generated — ready to print.`, 'success');
+  toast(`${labels.length} label${labels.length !== 1 ? 's' : ''} ready — click Print.`, 'success');
 }
 
 // ═══════════════════════════════════════════════
@@ -513,15 +579,19 @@ function generatePreview() {
 function formatPrice(p) {
   const n = parseFloat(p);
   if (isNaN(n)) return p;
-  return n.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 });
+  // Adjust currency/locale to your store's currency if needed
+  return n.toLocaleString('en-OM', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 });
 }
+
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
 let toastTimer = null;
 function toast(msg, type = '') {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.className = `show ${type}`;
+  el.textContent = msg;
+  el.className = `show ${type}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = ''; }, 3500);
 }
