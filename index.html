@@ -4,159 +4,293 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shopify Label Printer</title>
+<!-- Barcode -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<!-- QR Code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
   :root {
-    --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424; --border: #2e2e2e;
-    --accent: #e8ff4d; --accent2: #4dffb4; --text: #f0f0f0; --text-muted: #888;
-    --danger: #ff4d4d; --radius: 6px;
+    --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;
+    --accent:#e8ff4d;--accent2:#4dffb4;--text:#f0f0f0;--text-muted:#888;
+    --danger:#ff4d4d;--radius:6px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-  header { border-bottom: 1px solid var(--border); padding: 18px 32px; display: flex; align-items: center; gap: 14px; background: var(--surface); }
-  header .logo { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
-  header .subtitle { font-size: 12px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
-  header .sep { flex: 1; }
-  #configBtn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 7px 14px; border-radius: var(--radius); cursor: pointer; font-size: 12px; font-family: 'IBM Plex Mono', monospace; transition: all .2s; }
-  #configBtn:hover { border-color: var(--accent); color: var(--accent); }
+  header{border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;gap:14px;background:var(--surface);}
+  header .logo{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
+  header .subtitle{font-size:12px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
+  header .sep{flex:1;}
+  #configBtn{background:none;border:1px solid var(--border);color:var(--text-muted);padding:7px 14px;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:'IBM Plex Mono',monospace;transition:all .2s;}
+  #configBtn:hover{border-color:var(--accent);color:var(--accent);}
 
-  .app { display: grid; grid-template-columns: 380px 1fr; height: calc(100vh - 61px); }
+  .app{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 61px);}
 
-  .sidebar { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
-  .sidebar-section { padding: 20px; border-bottom: 1px solid var(--border); }
-  .sidebar-section h3 { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 12px; }
+  .sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--surface);}
+  .sidebar-section{padding:20px;border-bottom:1px solid var(--border);}
+  .sidebar-section h3{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;}
 
-  .search-wrap { position: relative; }
-  .search-wrap input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; outline: none; transition: border-color .2s; }
-  .search-wrap input:focus { border-color: var(--accent); }
-  .search-wrap input::placeholder { color: var(--text-muted); }
+  .search-wrap{position:relative;}
+  .search-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+  .search-wrap input:focus{border-color:var(--accent);}
+  .search-wrap input::placeholder{color:var(--text-muted);}
 
-  #searchResults { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); z-index: 100; max-height: 260px; overflow-y: auto; display: none; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
-  #searchResults.open { display: block; }
+  #searchResults{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);z-index:100;max-height:260px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+  #searchResults.open{display:block;}
+  .result-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+  .result-item:last-child{border-bottom:none;}
+  .result-item:hover{background:var(--border);}
+  .result-thumb{width:36px;height:36px;border-radius:4px;object-fit:cover;background:var(--bg);flex-shrink:0;}
+  .result-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .result-info{flex:1;min-width:0;}
+  .result-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .result-meta{font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
 
-  .result-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .15s; }
-  .result-item:last-child { border-bottom: none; }
-  .result-item:hover { background: var(--border); }
-  .result-thumb { width: 36px; height: 36px; border-radius: 4px; object-fit: cover; background: var(--bg); flex-shrink: 0; }
-  .result-thumb.placeholder { display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .result-info { flex: 1; min-width: 0; }
-  .result-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .result-meta { font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  #queueList{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+  #queueList:empty::after{content:'No products added yet.\ASearch above to add products.';white-space:pre;color:var(--text-muted);font-size:12px;text-align:center;padding:32px 16px;line-height:1.8;}
 
-  #queueList { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-  #queueList:empty::after { content: 'No products added yet.\ASearch above to add products.'; white-space: pre; color: var(--text-muted); font-size: 12px; text-align: center; padding: 32px 16px; line-height: 1.8; }
+  .queue-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;}
+  .queue-item-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+  .queue-thumb{width:40px;height:40px;border-radius:4px;object-fit:cover;background:var(--bg);flex-shrink:0;}
+  .queue-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .queue-title{font-size:13px;font-weight:500;line-height:1.4;flex:1;}
+  .queue-remove{margin-left:auto;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:0 4px;flex-shrink:0;transition:color .2s;}
+  .queue-remove:hover{color:var(--danger);}
 
-  .queue-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
-  .queue-item-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
-  .queue-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: var(--bg); flex-shrink: 0; }
-  .queue-thumb.placeholder { display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .queue-title { font-size: 13px; font-weight: 500; line-height: 1.4; flex: 1; }
-  .queue-remove { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 0 4px; flex-shrink: 0; transition: color .2s; }
-  .queue-remove:hover { color: var(--danger); }
+  .variant-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;}
+  .variant-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .variant-select{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:5px 8px;font-family:'IBM Plex Sans',sans-serif;outline:none;min-width:120px;}
+  .qty-wrap{display:flex;align-items:center;border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  .qty-btn{background:var(--bg);border:none;color:var(--text);width:26px;height:28px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+  .qty-btn:hover{background:var(--border);}
+  .qty-input{background:var(--bg);border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);color:var(--text);width:40px;text-align:center;font-size:12px;font-family:'IBM Plex Mono',monospace;padding:0;height:28px;outline:none;}
 
-  .variant-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; }
-  .variant-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .variant-select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 12px; padding: 5px 8px; font-family: 'IBM Plex Sans', sans-serif; outline: none; min-width: 120px; }
-  .qty-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-  .qty-btn { background: var(--bg); border: none; color: var(--text); width: 26px; height: 28px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
-  .qty-btn:hover { background: var(--border); }
-  .qty-input { background: var(--bg); border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border); color: var(--text); width: 40px; text-align: center; font-size: 12px; font-family: 'IBM Plex Mono', monospace; padding: 0; height: 28px; outline: none; }
+  .sidebar-actions{padding:16px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+  .btn{padding:11px 18px;border-radius:var(--radius);font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;width:100%;}
+  .btn-primary{background:var(--accent);color:#0f0f0f;}
+  .btn-primary:hover{background:#d4eb2e;}
+  .btn-primary:disabled{background:var(--border);color:var(--text-muted);cursor:not-allowed;}
+  .btn-secondary{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
+  .btn-secondary:hover{color:var(--text);border-color:var(--text-muted);}
 
-  .sidebar-actions { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-  .btn { padding: 11px 18px; border-radius: var(--radius); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; width: 100%; }
-  .btn-primary { background: var(--accent); color: #0f0f0f; }
-  .btn-primary:hover { background: #d4eb2e; }
-  .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
-  .btn-secondary { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
-  .btn-secondary:hover { color: var(--text); border-color: var(--text-muted); }
+  .preview-panel{display:flex;flex-direction:column;overflow:hidden;}
+  .preview-toolbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface);}
+  .preview-toolbar span{font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
+  .preview-toolbar .sep{flex:1;}
+  #labelCount{font-size:11px;color:var(--accent2);font-family:'IBM Plex Mono',monospace;}
 
-  .preview-panel { display: flex; flex-direction: column; overflow: hidden; }
-  .preview-toolbar { padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--surface); }
-  .preview-toolbar span { font-size: 11px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
-  .preview-toolbar .sep { flex: 1; }
-  #labelCount { font-size: 11px; color: var(--accent2); font-family: 'IBM Plex Mono', monospace; }
+  #previewArea{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:32px;background:#1c1c1c;}
+  #previewArea.empty{align-items:center;justify-content:center;}
+  .empty-state{text-align:center;color:var(--text-muted);}
+  .empty-state .icon{font-size:48px;margin-bottom:16px;opacity:.4;}
+  .empty-state p{font-size:13px;line-height:1.7;}
 
-  #previewArea { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 32px; background: #1c1c1c; }
-  #previewArea.empty { align-items: center; justify-content: center; }
-  .empty-state { text-align: center; color: var(--text-muted); }
-  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
-  .empty-state p { font-size: 13px; line-height: 1.7; }
-
-  /* Label sheet - pixel dimensions match 210×297mm at 96dpi with your margins */
-  #labelSheet {
-    background: white;
-    width: 794px; min-height: 1123px;
-    box-shadow: 0 8px 40px rgba(0,0,0,.5);
-    padding: 30px 23px; /* 8mm top/bottom, 6mm left/right */
-    display: grid;
-    grid-template-columns: repeat(3, 240px);
-    grid-template-rows: repeat(4, 265px);
-    gap: 0;
-    align-content: start;
+  /* ── LABEL SHEET ── */
+  #labelSheet{
+    background:white;
+    width:794px;min-height:1123px;
+    box-shadow:0 8px 40px rgba(0,0,0,.5);
+    padding:30px 23px;
+    display:grid;
+    grid-template-columns:repeat(3,240px);
+    gap:0;
+    align-content:start;
   }
 
-  /* Each label: 63.5mm × 70mm */
-  .label {
-    width: 240px; height: 265px;
-    border: 0.5px dashed #ccc; /* guide line — hidden at print */
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: space-between;
-    padding: 8px 6px 6px;
-    font-family: Arial, Helvetica, sans-serif;
-    overflow: hidden;
+  /* ── INDIVIDUAL LABEL — matches screenshot layout ── */
+  .label{
+    width:240px;height:265px;
+    border:0.5px dashed #ccc;
+    display:flex;flex-direction:column;
+    padding:7px 6px 5px;
+    font-family:Arial,Helvetica,sans-serif;
+    overflow:hidden;
+    position:relative;
   }
-  .label-image { width: 80px; height: 70px; object-fit: contain; flex-shrink: 0; }
-  .label-image-placeholder { width: 80px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
-  .label-title { font-size: 10px; font-weight: 700; text-align: center; color: #111; line-height: 1.3; max-height: 40px; overflow: hidden; width: 100%; }
-  .label-variant { font-size: 9px; text-align: center; color: #444; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .label-price { font-size: 15px; font-weight: 700; color: #000; text-align: center; }
-  .label-barcode-wrap { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; }
-  .label-barcode-wrap svg { max-width: 100%; height: 40px; }
-  .label-sku { font-size: 8px; color: #555; font-family: 'Courier New', monospace; text-align: center; }
+
+  /* Row 1: Product name */
+  .lbl-title{
+    font-size:11px;font-weight:700;
+    text-align:center;color:#111;
+    line-height:1.25;
+    max-height:28px;overflow:hidden;
+    flex-shrink:0;
+    margin-bottom:2px;
+  }
+
+  /* Row 2: Variant */
+  .lbl-variant{
+    font-size:9px;text-align:center;color:#333;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    flex-shrink:0;margin-bottom:4px;
+  }
+
+  /* Row 3: Middle section — QR | Image | Barcode */
+  .lbl-middle{
+    display:flex;flex-direction:row;
+    align-items:center;
+    gap:4px;
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+  }
+
+  /* Left col: QR + Vendor */
+  .lbl-left{
+    display:flex;flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    width:68px;flex-shrink:0;
+  }
+  .lbl-qr{
+    width:62px;height:62px;
+    flex-shrink:0;
+  }
+  .lbl-qr img, .lbl-qr canvas{width:62px!important;height:62px!important;}
+  .lbl-vendor{
+    font-size:8px;color:#444;
+    text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    width:68px;
+  }
+
+  /* Center col: Product image */
+  .lbl-center{
+    flex:1;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .lbl-img{
+    max-width:90px;max-height:95px;
+    object-fit:contain;
+  }
+  .lbl-img-placeholder{
+    font-size:36px;
+    opacity:.3;
+  }
+
+  /* Right col: SKU (rotated) + Barcode */
+  .lbl-right{
+    display:flex;flex-direction:row;
+    align-items:center;
+    justify-content:flex-end;
+    gap:2px;
+    width:52px;flex-shrink:0;
+  }
+  .lbl-sku-rotated{
+    font-size:7px;
+    color:#333;
+    font-family:'Courier New',monospace;
+    white-space:nowrap;
+    transform:rotate(90deg);
+    transform-origin:center center;
+    letter-spacing:.5px;
+    flex-shrink:0;
+  }
+  .lbl-barcode{
+    display:flex;
+    align-items:center;
+  }
+  .lbl-barcode svg{
+    height:90px!important;
+    width:28px!important;
+  }
+
+  /* Row 4: Prices */
+  .lbl-prices{
+    flex-shrink:0;
+    margin-top:4px;
+    display:flex;flex-direction:column;
+    align-items:flex-end;
+    gap:1px;
+    direction:rtl;
+  }
+  .lbl-compare{
+    font-size:9.5px;color:#555;
+    text-decoration:line-through;
+    font-family:Arial,sans-serif;
+    direction:rtl;
+  }
+  .lbl-price{
+    font-size:14px;font-weight:700;
+    color:#e00;
+    font-family:Arial,sans-serif;
+    direction:rtl;
+    line-height:1.1;
+  }
+
+  /* Row 5: Sizes */
+  .lbl-sizes-wrap{
+    flex-shrink:0;
+    margin-top:3px;
+    direction:rtl;
+    text-align:right;
+  }
+  .lbl-sizes-label{
+    font-size:8px;color:#555;
+    font-family:Arial,sans-serif;
+  }
+  .lbl-sizes-val{
+    font-size:9px;font-weight:600;color:#111;
+    font-family:Arial,sans-serif;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
 
   /* CONFIG MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 1000; display: none; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px; width: 500px; max-width: 95vw; }
-  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-  .modal-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 6px; }
-  .field input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 13px; outline: none; transition: border-color .2s; }
-  .field input:focus { border-color: var(--accent); }
-  .field .hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-  .modal-actions .btn { flex: 1; }
-  .btn-cancel { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:32px;width:500px;max-width:95vw;}
+  .modal h2{font-size:16px;font-weight:600;margin-bottom:6px;}
+  .modal-desc{font-size:12px;color:var(--text-muted);margin-bottom:24px;line-height:1.6;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
+  .field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;outline:none;transition:border-color .2s;}
+  .field input:focus{border-color:var(--accent);}
+  .field .hint{font-size:11px;color:var(--text-muted);margin-top:5px;line-height:1.5;}
+  .modal-actions{display:flex;gap:10px;margin-top:24px;}
+  .modal-actions .btn{flex:1;}
+  .btn-cancel{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
 
-  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; font-size: 13px; color: var(--text); z-index: 2000; transform: translateY(80px); opacity: 0; transition: all .3s; max-width: 320px; }
-  #toast.show { transform: translateY(0); opacity: 1; }
-  #toast.error { border-color: var(--danger); color: var(--danger); }
-  #toast.success { border-color: var(--accent2); color: var(--accent2); }
+  #toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;font-size:13px;color:var(--text);z-index:2000;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px;}
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.error{border-color:var(--danger);color:var(--danger);}
+  #toast.success{border-color:var(--accent2);color:var(--accent2);}
 
-  .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; vertical-align: middle; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 
   /* ── PRINT ── */
   @media print {
-    body { background: white; }
-    header, .sidebar, .preview-toolbar, .modal-overlay, #toast { display: none !important; }
-    .app { display: block; height: auto; }
-    .preview-panel { display: block; }
-    #previewArea { padding: 0; background: white; display: block; overflow: visible; }
-    #labelSheet { box-shadow: none; width: 210mm; min-height: 297mm; padding: 8mm 6mm; grid-template-columns: repeat(3, 63.5mm); grid-template-rows: repeat(4, 70mm); }
-    .label { width: 63.5mm; height: 70mm; border: none; padding: 2mm 1.5mm; }
-    .label-image { width: 20mm; height: 18mm; }
-    .label-image-placeholder { width: 20mm; height: 18mm; }
-    .label-title { font-size: 7pt; }
-    .label-variant { font-size: 6.5pt; }
-    .label-price { font-size: 11pt; }
-    .label-barcode-wrap svg { height: 10mm; }
-    .label-sku { font-size: 5.5pt; }
-    @page { size: A4; margin: 0; }
+    body{background:white;}
+    header,.sidebar,.preview-toolbar,.modal-overlay,#toast{display:none!important;}
+    .app{display:block;height:auto;}
+    .preview-panel{display:block;}
+    #previewArea{padding:0;background:white;display:block;overflow:visible;}
+    #labelSheet{
+      box-shadow:none;
+      width:210mm;min-height:297mm;
+      padding:8mm 6mm;
+      grid-template-columns:repeat(3,63.5mm);
+    }
+    .label{width:63.5mm;height:70mm;border:none;padding:2mm 1.5mm 1.5mm;}
+    .lbl-title{font-size:7pt;max-height:16pt;}
+    .lbl-variant{font-size:6pt;}
+    .lbl-qr{width:16mm;height:16mm;}
+    .lbl-qr img,.lbl-qr canvas{width:16mm!important;height:16mm!important;}
+    .lbl-vendor{font-size:5.5pt;width:18mm;}
+    .lbl-left{width:18mm;}
+    .lbl-img{max-width:22mm;max-height:24mm;}
+    .lbl-right{width:14mm;}
+    .lbl-sku-rotated{font-size:4.5pt;}
+    .lbl-barcode svg{height:22mm!important;width:7mm!important;}
+    .lbl-compare{font-size:6.5pt;}
+    .lbl-price{font-size:9pt;}
+    .lbl-sizes-label{font-size:5.5pt;}
+    .lbl-sizes-val{font-size:6pt;}
+    @page{size:A4;margin:0;}
   }
 </style>
 </head>
@@ -166,11 +300,16 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2>Cloudflare Worker URL</h2>
-    <p class="modal-desc">Enter the URL of your deployed Cloudflare Worker. Your Shopify credentials stay inside the Worker — this tool only talks to the Worker.</p>
+    <p class="modal-desc">Enter the URL of your deployed Cloudflare Worker. Your Shopify credentials stay inside the Worker.</p>
     <div class="field">
       <label>Worker URL</label>
       <input type="text" id="cfgWorkerUrl" placeholder="https://your-worker.your-subdomain.workers.dev" />
       <div class="hint">Found in your Cloudflare Workers dashboard. Ends in <strong>.workers.dev</strong></div>
+    </div>
+    <div class="field">
+      <label>Store Domain (for QR links)</label>
+      <input type="text" id="cfgStoreDomain" placeholder="your-store.com" />
+      <div class="hint">Your public storefront domain, e.g. <strong>myshop.com</strong> — used to build product QR code URLs.</div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
@@ -186,11 +325,10 @@
     <div class="subtitle">Shopify Product Labels</div>
   </div>
   <div class="sep"></div>
-  <button id="configBtn" onclick="openModal()">⚙ Configure Worker URL</button>
+  <button id="configBtn" onclick="openModal()">⚙ Configure</button>
 </header>
 
 <div class="app">
-
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-section">
@@ -200,12 +338,10 @@
         <div id="searchResults"></div>
       </div>
     </div>
-
     <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden;border-bottom:none;">
       <h3>Label Queue</h3>
     </div>
     <div id="queueList"></div>
-
     <div class="sidebar-actions">
       <button class="btn btn-primary" id="generateBtn" onclick="generatePreview()" disabled>Generate Preview</button>
       <button class="btn btn-secondary" onclick="clearQueue()">Clear Queue</button>
@@ -227,7 +363,6 @@
       </div>
     </div>
   </div>
-
 </div>
 <div id="toast"></div>
 
@@ -235,10 +370,12 @@
 // ═══════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════
-let workerUrl = localStorage.getItem('slp_worker_url') || '';
+let workerUrl   = localStorage.getItem('slp_worker_url')   || '';
+let storeDomain = localStorage.getItem('slp_store_domain') || '';
 
 function openModal() {
-  document.getElementById('cfgWorkerUrl').value = workerUrl;
+  document.getElementById('cfgWorkerUrl').value   = workerUrl;
+  document.getElementById('cfgStoreDomain').value = storeDomain;
   document.getElementById('modalOverlay').classList.add('open');
 }
 function closeModal() {
@@ -246,24 +383,23 @@ function closeModal() {
 }
 function saveConfig() {
   let u = document.getElementById('cfgWorkerUrl').value.trim().replace(/\/$/, '');
+  let d = document.getElementById('cfgStoreDomain').value.trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
   if (!u) { toast('Please enter your Worker URL.', 'error'); return; }
-  if (!u.startsWith('http')) { toast('URL must start with https://', 'error'); return; }
-  workerUrl = u;
-  localStorage.setItem('slp_worker_url', u);
+  workerUrl   = u;
+  storeDomain = d;
+  localStorage.setItem('slp_worker_url',   u);
+  localStorage.setItem('slp_store_domain', d);
   closeModal();
-  toast('Worker connected!', 'success');
+  toast('Saved!', 'success');
 }
-
-window.addEventListener('DOMContentLoaded', () => {
-  if (!workerUrl) openModal();
-});
+window.addEventListener('DOMContentLoaded', () => { if (!workerUrl) openModal(); });
 
 // ═══════════════════════════════════════════════
-//  API — talks to the Cloudflare Worker only
+//  API
 // ═══════════════════════════════════════════════
 async function workerGet(path) {
   if (!workerUrl) { openModal(); throw new Error('Worker URL not configured'); }
-  const res = await fetch(`${workerUrl}${path}`);
+  const res  = await fetch(`${workerUrl}${path}`);
   const data = await res.json();
   if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
@@ -273,38 +409,30 @@ async function workerGet(path) {
 //  SEARCH
 // ═══════════════════════════════════════════════
 let searchTimer = null;
-
 document.getElementById('searchInput').addEventListener('input', function () {
   clearTimeout(searchTimer);
   const q = this.value.trim();
   if (q.length < 2) { closeResults(); return; }
   searchTimer = setTimeout(() => doSearch(q), 350);
 });
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrap')) closeResults();
-});
+document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) closeResults(); });
 
 function closeResults() {
   const el = document.getElementById('searchResults');
-  el.innerHTML = '';
-  el.classList.remove('open');
+  el.innerHTML = ''; el.classList.remove('open');
 }
 
 async function doSearch(q) {
   const el = document.getElementById('searchResults');
   el.innerHTML = '<div style="padding:12px 14px;color:var(--text-muted);font-size:12px;"><span class="spinner"></span> Searching…</div>';
   el.classList.add('open');
-
   try {
     const data = await workerGet(`/search?q=${encodeURIComponent(q)}`);
     el.innerHTML = '';
-
-    if (!data.products || data.products.length === 0) {
+    if (!data.products || !data.products.length) {
       el.innerHTML = '<div style="padding:12px 14px;color:var(--text-muted);font-size:12px;">No products found.</div>';
       return;
     }
-
     data.products.forEach(p => {
       const img = p.images?.[0]?.src || null;
       const div = document.createElement('div');
@@ -312,20 +440,11 @@ async function doSearch(q) {
       div.innerHTML = img
         ? `<img class="result-thumb" src="${img}" loading="lazy">`
         : `<div class="result-thumb placeholder">📦</div>`;
-      div.innerHTML += `
-        <div class="result-info">
-          <div class="result-title">${escHtml(p.title)}</div>
-          <div class="result-meta">${p.variants.length} variant${p.variants.length !== 1 ? 's' : ''}</div>
-        </div>`;
-      div.addEventListener('click', () => {
-        addToQueue(p);
-        closeResults();
-        document.getElementById('searchInput').value = '';
-      });
+      div.innerHTML += `<div class="result-info"><div class="result-title">${escHtml(p.title)}</div><div class="result-meta">${p.variants.length} variant${p.variants.length!==1?'s':''}</div></div>`;
+      div.addEventListener('click', () => { addToQueue(p); closeResults(); document.getElementById('searchInput').value = ''; });
       el.appendChild(div);
     });
-
-  } catch (e) {
+  } catch(e) {
     el.innerHTML = `<div style="padding:12px 14px;color:var(--danger);font-size:12px;">Error: ${e.message}</div>`;
   }
 }
@@ -336,11 +455,8 @@ async function doSearch(q) {
 let queue = [];
 
 function addToQueue(product) {
-  // Prevent exact duplicate (same product id already in queue)
-  const alreadyIn = queue.some(item => item.product.id === product.id);
-  if (alreadyIn) {
-    toast(`"${product.title}" is already in the queue.`, '');
-    return;
+  if (queue.some(item => item.product.id === product.id)) {
+    toast(`"${product.title}" is already in the queue.`, ''); return;
   }
   queue.push({ product, variantId: product.variants[0].id, qty: 1 });
   renderQueue();
@@ -353,13 +469,11 @@ function renderQueue() {
   document.getElementById('generateBtn').disabled = queue.length === 0;
 
   queue.forEach((item, idx) => {
-    const p = item.product;
+    const p   = item.product;
     const img = p.images?.[0]?.src || null;
-
     const div = document.createElement('div');
     div.className = 'queue-item';
 
-    // Header row
     const header = document.createElement('div');
     header.className = 'queue-item-header';
     header.innerHTML = img
@@ -374,12 +488,10 @@ function renderQueue() {
     const removeBtn = document.createElement('button');
     removeBtn.className = 'queue-remove';
     removeBtn.innerHTML = '×';
-    removeBtn.title = 'Remove';
-    removeBtn.onclick = () => { queue.splice(idx, 1); renderQueue(); };
+    removeBtn.onclick = () => { queue.splice(idx,1); renderQueue(); };
     header.appendChild(removeBtn);
     div.appendChild(header);
 
-    // Variant + qty row
     const vLabel = document.createElement('div');
     vLabel.className = 'variant-label';
     vLabel.textContent = 'Variant & Quantity';
@@ -388,7 +500,6 @@ function renderQueue() {
     const row = document.createElement('div');
     row.className = 'variant-row';
 
-    // Variant selector
     const sel = document.createElement('select');
     sel.className = 'variant-select';
     p.variants.forEach(v => {
@@ -398,30 +509,17 @@ function renderQueue() {
       if (v.id === item.variantId) opt.selected = true;
       sel.appendChild(opt);
     });
-    sel.onchange = () => { queue[idx].variantId = parseInt(sel.value, 10); };
+    sel.onchange = () => { queue[idx].variantId = parseInt(sel.value,10); };
     row.appendChild(sel);
 
-    // Qty stepper
     const qtyWrap = document.createElement('div');
     qtyWrap.className = 'qty-wrap';
-
-    const minus = document.createElement('button');
-    minus.className = 'qty-btn'; minus.textContent = '−';
-
-    const qtyInput = document.createElement('input');
-    qtyInput.type = 'number'; qtyInput.className = 'qty-input';
-    qtyInput.value = item.qty; qtyInput.min = 1;
-
-    const plus = document.createElement('button');
-    plus.className = 'qty-btn'; plus.textContent = '+';
-
-    minus.onclick = () => { if (queue[idx].qty > 1) { queue[idx].qty--; qtyInput.value = queue[idx].qty; } };
-    plus.onclick = () => { queue[idx].qty++; qtyInput.value = queue[idx].qty; };
-    qtyInput.onchange = () => {
-      queue[idx].qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
-      qtyInput.value = queue[idx].qty;
-    };
-
+    const minus = document.createElement('button'); minus.className='qty-btn'; minus.textContent='−';
+    const qtyInput = document.createElement('input'); qtyInput.type='number'; qtyInput.className='qty-input'; qtyInput.value=item.qty; qtyInput.min=1;
+    const plus = document.createElement('button'); plus.className='qty-btn'; plus.textContent='+';
+    minus.onclick = () => { if(queue[idx].qty>1){queue[idx].qty--;qtyInput.value=queue[idx].qty;} };
+    plus.onclick  = () => { queue[idx].qty++; qtyInput.value=queue[idx].qty; };
+    qtyInput.onchange = () => { queue[idx].qty=Math.max(1,parseInt(qtyInput.value,10)||1); qtyInput.value=queue[idx].qty; };
     qtyWrap.appendChild(minus); qtyWrap.appendChild(qtyInput); qtyWrap.appendChild(plus);
     row.appendChild(qtyWrap);
     div.appendChild(row);
@@ -430,11 +528,8 @@ function renderQueue() {
 }
 
 function clearQueue() {
-  queue = [];
-  renderQueue();
-  resetPreview();
+  queue = []; renderQueue(); resetPreview();
 }
-
 function resetPreview() {
   const area = document.getElementById('previewArea');
   area.className = 'empty';
@@ -443,13 +538,13 @@ function resetPreview() {
 }
 
 // ═══════════════════════════════════════════════
-//  BARCODE — auto-detects format
+//  BARCODE (vertical, no text)
 // ═══════════════════════════════════════════════
 function detectFormat(v) {
   if (!v) return null;
   v = v.trim();
   if (/^\d{13}$/.test(v)) return 'EAN13';
-  if (/^\d{8}$/.test(v)) return 'EAN8';
+  if (/^\d{8}$/.test(v))  return 'EAN8';
   if (/^\d{12}$/.test(v)) return 'UPC';
   if (/^[\x20-\x7E]+$/.test(v)) return 'CODE128';
   return null;
@@ -461,19 +556,29 @@ function renderBarcode(svgId, value) {
   if (!fmt) return;
   try {
     JsBarcode(`#${svgId}`, value, {
-      format: fmt, width: 1.5, height: 36,
-      displayValue: false, margin: 0,
-      background: 'transparent', lineColor: '#000',
+      format: fmt, displayValue: false,
+      margin: 0, background: 'transparent', lineColor: '#000',
+      width: 1.2, height: 90,
     });
   } catch {
-    try {
-      JsBarcode(`#${svgId}`, value, {
-        format: 'CODE128', width: 1.2, height: 36,
-        displayValue: false, margin: 0,
-        background: 'transparent', lineColor: '#000',
-      });
-    } catch {}
+    try { JsBarcode(`#${svgId}`, value, { format:'CODE128', displayValue:false, margin:0, background:'transparent', lineColor:'#000', width:1, height:90 }); } catch {}
   }
+}
+
+// ═══════════════════════════════════════════════
+//  QR CODE
+// ═══════════════════════════════════════════════
+function renderQR(containerId, url) {
+  const el = document.getElementById(containerId);
+  if (!el || !url) return;
+  try {
+    new QRCode(el, {
+      text: url,
+      width: 62, height: 62,
+      colorDark: '#000', colorLight: '#fff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  } catch(e) { console.warn('QR error:', e); }
 }
 
 // ═══════════════════════════════════════════════
@@ -482,27 +587,34 @@ function renderBarcode(svgId, value) {
 function generatePreview() {
   if (!queue.length) return;
 
-  // Build flat label list
   const labels = [];
   queue.forEach(item => {
-    const p = item.product;
+    const p       = item.product;
     const variant = p.variants.find(v => v.id === item.variantId) || p.variants[0];
-    const img = p.images?.[0]?.src || null;
+    const img     = p.images?.[0]?.src || null;
+    const qrUrl   = storeDomain
+      ? `https://${storeDomain}/products/${p.handle}`
+      : `https://${p.handle}`;  // fallback
+
     for (let i = 0; i < item.qty; i++) {
       labels.push({
-        title: p.title,
+        title:       p.title,
         variantTitle: variant.title === 'Default Title' ? '' : variant.title,
-        price: variant.price,
-        barcode: variant.barcode || '',
-        sku: variant.sku || '',
+        vendor:      p.vendor,
         img,
+        sku:         variant.sku     || '',
+        barcode:     variant.barcode || variant.sku || '',
+        price_yer:   p.price_yer    || '',
+        yer_compare: p.yer_compare  || '',
+        sizes:       p.sizes        || '',
+        qrUrl,
       });
     }
   });
 
   const area = document.getElementById('previewArea');
   area.className = '';
-  document.getElementById('labelCount').textContent = `${labels.length} label${labels.length !== 1 ? 's' : ''}`;
+  document.getElementById('labelCount').textContent = `${labels.length} label${labels.length!==1?'s':''}`;
   area.innerHTML = '<div id="labelSheet"></div>';
   const sheet = document.getElementById('labelSheet');
 
@@ -510,90 +622,140 @@ function generatePreview() {
     const cell = document.createElement('div');
     cell.className = 'label';
 
-    // Image
-    if (lbl.img) {
-      const imgEl = document.createElement('img');
-      imgEl.className = 'label-image';
-      imgEl.src = lbl.img;
-      imgEl.loading = 'lazy';
-      cell.appendChild(imgEl);
-    } else {
-      const ph = document.createElement('div');
-      ph.className = 'label-image-placeholder';
-      ph.textContent = '📦';
-      cell.appendChild(ph);
-    }
-
-    // Title
+    // ── Row 1: Title ──
     const titleEl = document.createElement('div');
-    titleEl.className = 'label-title';
+    titleEl.className = 'lbl-title';
     titleEl.textContent = lbl.title;
     cell.appendChild(titleEl);
 
-    // Variant
+    // ── Row 2: Variant ──
     if (lbl.variantTitle) {
       const vEl = document.createElement('div');
-      vEl.className = 'label-variant';
+      vEl.className = 'lbl-variant';
       vEl.textContent = lbl.variantTitle;
       cell.appendChild(vEl);
     }
 
-    // Price
-    const priceEl = document.createElement('div');
-    priceEl.className = 'label-price';
-    priceEl.textContent = lbl.price ? formatPrice(lbl.price) : '';
-    cell.appendChild(priceEl);
+    // ── Row 3: Middle ──
+    const middle = document.createElement('div');
+    middle.className = 'lbl-middle';
 
-    // Barcode
-    const bcWrap = document.createElement('div');
-    bcWrap.className = 'label-barcode-wrap';
+    // Left: QR + Vendor
+    const leftCol = document.createElement('div');
+    leftCol.className = 'lbl-left';
 
-    const svgId = `bc_${i}`;
-    const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgEl.id = svgId;
-    bcWrap.appendChild(svgEl);
+    const qrWrap = document.createElement('div');
+    qrWrap.className = 'lbl-qr';
+    qrWrap.id = `qr_${i}`;
+    leftCol.appendChild(qrWrap);
 
-    // Show barcode number or SKU below
-    const codeText = lbl.barcode || (lbl.sku ? `SKU: ${lbl.sku}` : '');
-    if (codeText) {
+    if (lbl.vendor) {
+      const vendorEl = document.createElement('div');
+      vendorEl.className = 'lbl-vendor';
+      vendorEl.textContent = lbl.vendor;
+      leftCol.appendChild(vendorEl);
+    }
+    middle.appendChild(leftCol);
+
+    // Center: Image
+    const centerCol = document.createElement('div');
+    centerCol.className = 'lbl-center';
+    if (lbl.img) {
+      const imgEl = document.createElement('img');
+      imgEl.className = 'lbl-img';
+      imgEl.src = lbl.img;
+      imgEl.loading = 'lazy';
+      centerCol.appendChild(imgEl);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'lbl-img-placeholder';
+      ph.textContent = '📦';
+      centerCol.appendChild(ph);
+    }
+    middle.appendChild(centerCol);
+
+    // Right: SKU rotated + Barcode
+    const rightCol = document.createElement('div');
+    rightCol.className = 'lbl-right';
+
+    if (lbl.sku) {
       const skuEl = document.createElement('div');
-      skuEl.className = 'label-sku';
-      skuEl.textContent = codeText;
-      bcWrap.appendChild(skuEl);
+      skuEl.className = 'lbl-sku-rotated';
+      skuEl.textContent = lbl.sku;
+      rightCol.appendChild(skuEl);
     }
 
-    cell.appendChild(bcWrap);
+    const bcWrap = document.createElement('div');
+    bcWrap.className = 'lbl-barcode';
+    const svgId = `bc_${i}`;
+    const svgEl = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svgEl.id = svgId;
+    bcWrap.appendChild(svgEl);
+    rightCol.appendChild(bcWrap);
+    middle.appendChild(rightCol);
+
+    cell.appendChild(middle);
+
+    // ── Row 4: Prices ──
+    const pricesEl = document.createElement('div');
+    pricesEl.className = 'lbl-prices';
+
+    if (lbl.yer_compare) {
+      const compareEl = document.createElement('div');
+      compareEl.className = 'lbl-compare';
+      compareEl.textContent = `${lbl.yer_compare} ريال`;
+      pricesEl.appendChild(compareEl);
+    }
+    if (lbl.price_yer) {
+      const priceEl = document.createElement('div');
+      priceEl.className = 'lbl-price';
+      priceEl.textContent = `${lbl.price_yer} ريال`;
+      pricesEl.appendChild(priceEl);
+    }
+    cell.appendChild(pricesEl);
+
+    // ── Row 5: Sizes ──
+    if (lbl.sizes) {
+      const sizesWrap = document.createElement('div');
+      sizesWrap.className = 'lbl-sizes-wrap';
+
+      const sizesLabel = document.createElement('div');
+      sizesLabel.className = 'lbl-sizes-label';
+      sizesLabel.textContent = 'المقاسات المتوفرة';
+      sizesWrap.appendChild(sizesLabel);
+
+      const sizesVal = document.createElement('div');
+      sizesVal.className = 'lbl-sizes-val';
+      sizesVal.textContent = lbl.sizes;
+      sizesWrap.appendChild(sizesVal);
+
+      cell.appendChild(sizesWrap);
+    }
+
     sheet.appendChild(cell);
 
-    // Render barcode after element is in DOM
-    const bcValue = lbl.barcode || lbl.sku;
+    // Render barcode & QR after DOM insertion
+    const bcValue = lbl.barcode;
     if (bcValue) setTimeout(() => renderBarcode(svgId, bcValue), 60);
+    if (lbl.qrUrl) setTimeout(() => renderQR(`qr_${i}`, lbl.qrUrl), 80);
   });
 
-  toast(`${labels.length} label${labels.length !== 1 ? 's' : ''} ready — click Print.`, 'success');
+  toast(`${labels.length} label${labels.length!==1?'s':''} ready — click Print.`, 'success');
 }
 
 // ═══════════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════════
-function formatPrice(p) {
-  const n = parseFloat(p);
-  if (isNaN(n)) return p;
-  // Adjust currency/locale to your store's currency if needed
-  return n.toLocaleString('en-OM', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 });
-}
-
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 let toastTimer = null;
-function toast(msg, type = '') {
+function toast(msg, type='') {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `show ${type}`;
+  el.textContent = msg; el.className=`show ${type}`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+  toastTimer = setTimeout(()=>{el.className='';},3500);
 }
 </script>
 </body>
