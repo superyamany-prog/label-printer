@@ -315,7 +315,7 @@
 
     <div class="tab-content" id="previewView">
       <div class="print-header">
-        <div style="color:var(--text-muted); font-size:12px;" id="previewStatus">Waiting for generation...</div>
+        <div style="color:var(--text-muted); font-size:12px; font-weight:bold;" id="previewStatus">Waiting for generation...</div>
         <button class="btn btn-primary" onclick="window.print()">🖨 Print Sheet</button>
       </div>
       <div id="labelSheet"></div>
@@ -328,7 +328,6 @@
 <div style="position:absolute; left:-9999px; top:-9999px; visibility:hidden;">
   <canvas id="hiddenBarcode"></canvas>
   <div id="hiddenQR"></div>
-  <canvas id="renderCanvas"></canvas>
 </div>
 
 <script>
@@ -349,24 +348,20 @@ let storeDomain = '';
 let queue = [];
 const MM2PX = 3.7795275591; // 96 DPI
 
-// Safely retrieve from local storage and ensure proper URL formatting
 try {
   workerUrl = (localStorage.getItem('slp_worker_url') || '').replace(/\/$/, '');
   storeDomain = (localStorage.getItem('slp_store_domain') || '').replace(/^https?:\/\//,'').replace(/\/$/,'');
 } catch (e) {
-  console.warn("Local storage disabled by browser strict mode.");
+  console.warn("Local storage disabled.");
 }
 
-// DOMContentLoaded guarantees the HTML is ready and synchronous scripts are fully loaded
 window.addEventListener('DOMContentLoaded', () => {
   try {
-    if (typeof fabric === 'undefined') {
-      throw new Error("Fabric.js failed to load. The CDN link is broken or blocked.");
-    }
+    if (typeof fabric === 'undefined') throw new Error("Fabric.js failed to load.");
 
     canvas = new fabric.Canvas('labelCanvas', { preserveObjectStacking: true });
     
-    // Custom JSON exporter binding
+    // Explicitly teach Fabric to export our custom properties
     fabric.Object.prototype.toObject = (function(toObject) {
       return function() {
         return fabric.util.object.extend(toObject.call(this), {
@@ -488,7 +483,6 @@ function deleteSelected() {
   }
 }
 
-// ── ADD ELEMENTS ──
 function addCanvasText() {
   const text = new fabric.IText('Double Click to Edit', {
     left: 20, top: 20, fontSize: 14, fontFamily: 'Arial',
@@ -501,7 +495,6 @@ function addCanvasText() {
 function addCanvasBarcode() {
   const bcCanvas = document.getElementById('hiddenBarcode');
   JsBarcode(bcCanvas, "123456789012", { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 });
-  
   fabric.Image.fromURL(bcCanvas.toDataURL(), function(img) {
     img.set({ left: 20, top: 20, bindingType: 'BARCODE' });
     img.scaleToWidth(120);
@@ -532,105 +525,131 @@ function addCanvasImage() {
 }
 
 // ═══════════════════════════════════════════════
-//  PRINT ENGINE
+//  PRINT ENGINE (HEADLESS MEMORY RENDERER)
 // ═══════════════════════════════════════════════
 function generateQRCodeBase64(text) {
   return new Promise(resolve => {
     const div = document.getElementById('hiddenQR');
     div.innerHTML = '';
-    new QRCode(div, { text: text || '-', width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M });
-    setTimeout(() => {
-      const cvs = div.querySelector('canvas');
-      resolve(cvs ? cvs.toDataURL() : null);
-    }, 15);
+    try {
+        new QRCode(div, { text: text || '-', width: 120, height: 120, correctLevel: QRCode.CorrectLevel.M });
+        setTimeout(() => {
+          const cvs = div.querySelector('canvas');
+          if (cvs) { resolve(cvs.toDataURL()); return; }
+          const img = div.querySelector('img');
+          if (img && img.src) { resolve(img.src); return; }
+          resolve(null);
+        }, 50);
+    } catch(e) { resolve(null); }
   });
 }
 
 async function generatePrintPreview() {
-  if (!queue.length) return;
-  if (canvas.getObjects().length === 0) {
-    toast('Design is empty. Add elements in the Template Designer.', 'error');
-    return;
-  }
+  try {
+      if (!queue.length) return;
+      if (canvas.getObjects().length === 0) {
+        toast('Design is empty. Add elements in the Template Designer.', 'error');
+        return;
+      }
 
-  document.getElementById('tabPreview').click();
-  document.getElementById('previewStatus').innerText = "Generating high-res labels...";
-  const sheet = document.getElementById('labelSheet');
-  sheet.innerHTML = '';
-
-  const templateJSON = canvas.toJSON();
-  const renderCanvas = new fabric.Canvas('renderCanvas');
-  renderCanvas.setWidth(canvas.width);
-  renderCanvas.setHeight(canvas.height);
-
-  let flatQueue = [];
-  queue.forEach(q => {
-    for(let i=0; i<q.qty; i++) flatQueue.push(q);
-  });
-
-  for (let i = 0; i < flatQueue.length; i++) {
-    const item = flatQueue[i];
-    const p = item.product;
-    const variant = p.variants.find(v => v.id == item.variantId) || p.variants[0];
-
-    await new Promise(resolve => renderCanvas.loadFromJSON(templateJSON, resolve));
-    const objects = renderCanvas.getObjects();
-    
-    for (let obj of objects) {
-      const binding = obj.bindingType;
-      if (!binding || binding === 'STATIC') continue;
-
-      let val = '';
-      if (binding === 'PRODUCT_NAME') val = p.title;
-      if (binding === 'VARIANT_NAME') val = variant.title === 'Default Title' ? '' : variant.title;
-      if (binding === 'SKU') val = variant.sku || '';
-      if (binding === 'PRICE') val = variant.price || p.price || '';
-      if (binding === 'COMPARE_PRICE') val = variant.compare_at_price || p.compare_at_price || '';
-      if (binding === 'VENDOR') val = p.vendor || '';
+      document.getElementById('tabPreview').click();
+      const statusEl = document.getElementById('previewStatus');
+      statusEl.innerText = "Initializing Memory Renderer...";
+      statusEl.style.color = "var(--accent2)";
       
-      if (binding.includes('METAFIELD') && obj.metafieldKey) {
-        const keyParts = obj.metafieldKey.split('.');
-        val = `[Metafield: ${obj.metafieldKey}]`; 
-        try { if(p[keyParts[1]]) val = p[keyParts[1]]; } catch(e){}
+      const sheet = document.getElementById('labelSheet');
+      sheet.innerHTML = '';
+
+      // Crucial: Explicitly demand our custom properties are mapped into the JSON
+      const templateJSON = canvas.toJSON(['bindingType', 'metafieldKey', 'direction', 'id']);
+
+      // 🚨 CORE BUG FIX: Use a HEADLESS StaticCanvas. This completely isolates 
+      // the print process into pure memory, avoiding all browser DOM conflicts.
+      const memoryCanvas = new fabric.StaticCanvas(null, {
+          width: canvas.width,
+          height: canvas.height
+      });
+
+      let flatQueue = [];
+      queue.forEach(q => {
+        for(let i=0; i<q.qty; i++) flatQueue.push(q);
+      });
+
+      for (let i = 0; i < flatQueue.length; i++) {
+        statusEl.innerText = `Generating label ${i + 1} of ${flatQueue.length}...`;
+        const item = flatQueue[i];
+        const p = item.product;
+        const variant = p.variants.find(v => v.id == item.variantId) || p.variants[0];
+
+        // Load the template cleanly into memory
+        await new Promise(resolve => memoryCanvas.loadFromJSON(templateJSON, resolve));
+        const objects = memoryCanvas.getObjects();
+        
+        for (let obj of objects) {
+          const binding = obj.bindingType;
+          if (!binding || binding === 'STATIC') continue;
+
+          let val = '';
+          if (binding === 'PRODUCT_NAME') val = p.title || '';
+          if (binding === 'VARIANT_NAME') val = variant.title === 'Default Title' ? '' : variant.title;
+          if (binding === 'SKU') val = variant.sku || '';
+          if (binding === 'PRICE') val = variant.price || p.price || '';
+          if (binding === 'COMPARE_PRICE') val = variant.compare_at_price || p.compare_at_price || '';
+          if (binding === 'VENDOR') val = p.vendor || '';
+          
+          if (binding.includes('METAFIELD') && obj.metafieldKey) {
+            const keyParts = obj.metafieldKey.split('.');
+            val = `[Metafield: ${obj.metafieldKey}]`; 
+            try { if(p[keyParts[1]]) val = p[keyParts[1]]; } catch(e){}
+          }
+
+          if (obj.type === 'i-text' || obj.type === 'textbox') {
+            if(binding === 'BARCODE' && val) val = variant.barcode || variant.sku || '';
+            obj.set('text', String(val));
+          }
+          
+          if (obj.type === 'image' || obj.type === 'rect') {
+            if (binding === 'PRODUCT_IMAGE' && p.images && p.images.length > 0) {
+              await replaceFabricImage(memoryCanvas, obj, p.images[0].src, true);
+            }
+            else if (binding === 'BARCODE') {
+              const bcVal = variant.barcode || variant.sku || '00000';
+              const bcCanvas = document.getElementById('hiddenBarcode');
+              try {
+                JsBarcode(bcCanvas, bcVal, { format: "CODE128", displayValue: false, margin: 0, height: 60 });
+                await replaceFabricImage(memoryCanvas, obj, bcCanvas.toDataURL(), false);
+              } catch(e){}
+            }
+            else if (binding === 'QR_PRODUCT_URL') {
+               const qrUrl = storeDomain ? `https://${storeDomain}/products/${p.handle}` : `https://${p.handle}`;
+               const b64 = await generateQRCodeBase64(qrUrl);
+               if(b64) await replaceFabricImage(memoryCanvas, obj, b64, false);
+            }
+          }
+        }
+
+        memoryCanvas.renderAll();
+        
+        // Export high resolution directly from memory
+        const dataUrl = memoryCanvas.toDataURL({ format: 'png', multiplier: 3 });
+        
+        const cell = document.createElement('div');
+        cell.className = 'print-cell';
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        cell.appendChild(img);
+        sheet.appendChild(cell);
       }
 
-      if (obj.type === 'i-text' || obj.type === 'textbox') {
-        if(binding === 'BARCODE' && val) val = variant.barcode || variant.sku || '';
-        obj.set('text', String(val));
-      }
+      statusEl.innerText = `Successfully processed ${flatQueue.length} labels. Ready to print.`;
       
-      if (obj.type === 'image' || obj.type === 'rect') {
-        if (binding === 'PRODUCT_IMAGE' && p.images && p.images.length > 0) {
-          await replaceFabricImage(renderCanvas, obj, p.images[0].src, true);
-        }
-        else if (binding === 'BARCODE') {
-          const bcVal = variant.barcode || variant.sku || '00000';
-          const bcCanvas = document.getElementById('hiddenBarcode');
-          try {
-            JsBarcode(bcCanvas, bcVal, { format: "CODE128", displayValue: false, margin: 0, height: 60 });
-            await replaceFabricImage(renderCanvas, obj, bcCanvas.toDataURL(), false);
-          } catch(e){}
-        }
-        else if (binding === 'QR_PRODUCT_URL') {
-           const qrUrl = storeDomain ? `https://${storeDomain}/products/${p.handle}` : `https://${p.handle}`;
-           const b64 = await generateQRCodeBase64(qrUrl);
-           if(b64) await replaceFabricImage(renderCanvas, obj, b64, false);
-        }
-      }
-    }
-
-    renderCanvas.renderAll();
-    const dataUrl = renderCanvas.toDataURL({ format: 'png', multiplier: 3 });
-    
-    const cell = document.createElement('div');
-    cell.className = 'print-cell';
-    const img = document.createElement('img');
-    img.src = dataUrl;
-    cell.appendChild(img);
-    sheet.appendChild(cell);
+  } catch (err) {
+      console.error(err);
+      document.getElementById('sysError').style.display = 'block';
+      document.getElementById('sysError').innerText = 'Print Engine Fault: ' + err.message;
+      document.getElementById('previewStatus').innerText = "Process Failed. See error banner at top.";
+      document.getElementById('previewStatus').style.color = "var(--danger)";
   }
-
-  document.getElementById('previewStatus').innerText = `Generated ${flatQueue.length} labels successfully.`;
 }
 
 function replaceFabricImage(canvasCtx, oldObj, url, isExternalURL = false) {
@@ -638,30 +657,31 @@ function replaceFabricImage(canvasCtx, oldObj, url, isExternalURL = false) {
     const opts = {};
     if (isExternalURL) opts.crossOrigin = 'anonymous';
 
-    fabric.Image.fromURL(url, function(img) {
-      if(!img) { resolve(); return; }
-      img.set({
-        left: oldObj.left, top: oldObj.top,
-        scaleX: (oldObj.width * oldObj.scaleX) / img.width,
-        scaleY: (oldObj.height * oldObj.scaleY) / img.height,
-        angle: oldObj.angle
-      });
-      canvasCtx.remove(oldObj);
-      canvasCtx.add(img);
-      resolve();
-    }, opts);
+    try {
+        fabric.Image.fromURL(url, function(img) {
+          if(!img) { resolve(); return; }
+          img.set({
+            left: oldObj.left, top: oldObj.top,
+            scaleX: (oldObj.width * oldObj.scaleX) / img.width,
+            scaleY: (oldObj.height * oldObj.scaleY) / img.height,
+            angle: oldObj.angle
+          });
+          canvasCtx.remove(oldObj);
+          canvasCtx.add(img);
+          resolve();
+        }, opts);
+    } catch(e) {
+        resolve(); // Gracefully skip if image faults
+    }
   });
 }
 
 // ═══════════════════════════════════════════════
 //  API & QUEUE UTILS 
 // ═══════════════════════════════════════════════
-
-// The API Fetcher checks for formatted URLs and handles errors gracefully
 async function workerGet(path) {
   if (!workerUrl) { openModal(); throw new Error('Worker URL not configured'); }
   
-  // Format URL dynamically if missing https
   let finalUrl = workerUrl;
   if (!finalUrl.startsWith('http')) finalUrl = 'https://' + finalUrl;
 
@@ -731,7 +751,6 @@ function renderQueue() {
 }
 
 function clearQueue() { queue = []; renderQueue(); document.getElementById('labelSheet').innerHTML = '';}
-
 function openModal() { document.getElementById('cfgWorkerUrl').value=workerUrl; document.getElementById('cfgStoreDomain').value=storeDomain; document.getElementById('modalOverlay').classList.add('open'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 
