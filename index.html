@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shopify Label Printer Pro</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
@@ -25,7 +22,10 @@
   }
   
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh; overflow:hidden;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* System Error Banner */
+  #sysError { display:none; background:var(--danger); color:white; padding:12px; text-align:center; font-weight:bold; font-size:13px; z-index:9999; position:fixed; top:0; left:0; width:100%; box-shadow:0 4px 12px rgba(0,0,0,0.5); }
 
   header{border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;gap:14px;background:var(--surface); height: 61px;}
   header .logo{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
@@ -152,7 +152,7 @@
   /* Print Styles */
   @media print {
     body{background:white; overflow:visible;}
-    header,.sidebar,.tabs,.toolbar,.properties-panel,.print-header,#toast,.modal-overlay{display:none!important;}
+    #sysError,header,.sidebar,.tabs,.toolbar,.properties-panel,.print-header,#toast,.modal-overlay{display:none!important;}
     .app, .main-area {height:auto; display:block; background:white;}
     #previewView{padding:0; background:white; display:block;}
     #labelSheet{box-shadow:none; margin:0;}
@@ -162,6 +162,8 @@
 </style>
 </head>
 <body>
+
+<div id="sysError"></div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
@@ -325,34 +327,60 @@
   <canvas id="renderCanvas"></canvas>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
+
 <script>
+// Attach Global Error Handler for debugging
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  var errEl = document.getElementById('sysError');
+  errEl.style.display = 'block';
+  errEl.innerText = 'App Error: ' + msg + ' (Line: ' + lineNo + '). Please check browser console.';
+  return false;
+};
+
 // ═══════════════════════════════════════════════
-//  STATE & CONFIG
+//  STATE & SAFELOAD INITIALIZATION
 // ═══════════════════════════════════════════════
-let workerUrl = localStorage.getItem('slp_worker_url') || '';
-let storeDomain = localStorage.getItem('slp_store_domain') || '';
+let canvas;
+let workerUrl = '';
+let storeDomain = '';
 let queue = [];
 const MM2PX = 3.7795275591; // 96 DPI
 
-// Initialize Fabric Canvas
-const canvas = new fabric.Canvas('labelCanvas', { preserveObjectStacking: true });
+// Safely retrieve from local storage
+try {
+  workerUrl = localStorage.getItem('slp_worker_url') || '';
+  storeDomain = localStorage.getItem('slp_store_domain') || '';
+} catch (e) {
+  console.warn("Local storage disabled by browser strict mode.");
+}
 
-// Add custom properties to JSON export
-fabric.Object.prototype.toObject = (function(toObject) {
-  return function() {
-    return fabric.util.object.extend(toObject.call(this), {
-      bindingType: this.bindingType,
-      metafieldKey: this.metafieldKey,
-      direction: this.direction,
-      id: this.id
-    });
-  };
-})(fabric.Object.prototype.toObject);
-
+// Initialize Logic ONLY after the DOM is ready
 window.addEventListener('DOMContentLoaded', () => {
-  if (!workerUrl) openModal();
-  updateGrid();
-  setupCanvasEvents();
+  try {
+    canvas = new fabric.Canvas('labelCanvas', { preserveObjectStacking: true });
+    
+    // Custom JSON exporter binding
+    fabric.Object.prototype.toObject = (function(toObject) {
+      return function() {
+        return fabric.util.object.extend(toObject.call(this), {
+          bindingType: this.bindingType,
+          metafieldKey: this.metafieldKey,
+          direction: this.direction,
+          id: this.id
+        });
+      };
+    })(fabric.Object.prototype.toObject);
+
+    if (!workerUrl) openModal();
+    updateGrid();
+    setupCanvasEvents();
+  } catch (err) {
+    document.getElementById('sysError').style.display = 'block';
+    document.getElementById('sysError').innerText = 'Critical Canvas Load Error: ' + err.message;
+  }
 });
 
 function switchTab(tabId, el) {
@@ -366,6 +394,7 @@ function switchTab(tabId, el) {
 //  PHASE 1: GRID & DIMENSIONS
 // ═══════════════════════════════════════════════
 function updateGrid() {
+  if (!canvas) return;
   const w = parseFloat(document.getElementById('lblWidth').value) || 63.5;
   const h = parseFloat(document.getElementById('lblHeight').value) || 70;
   const mx = parseFloat(document.getElementById('marginX').value) || 6;
@@ -385,7 +414,6 @@ function updateGrid() {
   root.style.setProperty('--page-my', `${my}mm`);
   root.style.setProperty('--grid-cols', Math.max(1, cols));
 
-  // Resize Fabric Canvas
   const pxW = w * MM2PX;
   const pxH = h * MM2PX;
   canvas.setWidth(pxW);
@@ -412,7 +440,6 @@ function onObjectSelected(e) {
   document.getElementById('propertiesPanel').style.opacity = '1';
   document.getElementById('propertiesPanel').style.pointerEvents = 'auto';
 
-  // Populate props
   document.getElementById('propBinding').value = obj.bindingType || 'STATIC';
   document.getElementById('propText').value = obj.text || 'Element';
   document.getElementById('propMetafield').value = obj.metafieldKey || '';
@@ -441,7 +468,6 @@ function updateSelectedProp(key, value) {
 
   if (key === 'bindingType') togglePropVisibility(value);
 
-  // Apply visual placeholder text to canvas when binding changes (for design only)
   if (key === 'bindingType' && value !== 'STATIC' && obj.type === 'i-text') {
     obj.set('text', `[${value}]`);
   }
@@ -458,7 +484,7 @@ function deleteSelected() {
   }
 }
 
-// ── ADD ELEMENTS TO CANVAS ──
+// ── ADD ELEMENTS ──
 function addCanvasText() {
   const text = new fabric.IText('Double Click to Edit', {
     left: 20, top: 20, fontSize: 14, fontFamily: 'Arial',
@@ -471,23 +497,24 @@ function addCanvasText() {
 function addCanvasBarcode() {
   const bcCanvas = document.getElementById('hiddenBarcode');
   JsBarcode(bcCanvas, "123456789012", { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 });
+  
   fabric.Image.fromURL(bcCanvas.toDataURL(), function(img) {
     img.set({ left: 20, top: 20, bindingType: 'BARCODE' });
     img.scaleToWidth(120);
     canvas.add(img);
     canvas.setActiveObject(img);
-  }, { crossOrigin: 'anonymous' });
+  });
 }
 
 function addCanvasQR() {
   generateQRCodeBase64("dummy-data").then(b64 => {
     if(!b64) return;
     fabric.Image.fromURL(b64, function(img) {
-      img.set({ left: 20, top: 20, bindingType: 'QR_PRODUCT_URL' }); // Fixed: Maps to Dynamic QR
+      img.set({ left: 20, top: 20, bindingType: 'QR_PRODUCT_URL' }); 
       img.scaleToWidth(60);
       canvas.add(img);
       canvas.setActiveObject(img);
-    }, { crossOrigin: 'anonymous' });
+    });
   });
 }
 
@@ -501,7 +528,7 @@ function addCanvasImage() {
 }
 
 // ═══════════════════════════════════════════════
-//  PRINT ENGINE (Replaces template variables)
+//  PRINT ENGINE
 // ═══════════════════════════════════════════════
 function generateQRCodeBase64(text) {
   return new Promise(resolve => {
@@ -542,9 +569,7 @@ async function generatePrintPreview() {
     const p = item.product;
     const variant = p.variants.find(v => v.id == item.variantId) || p.variants[0];
 
-    // Load template freshly for each label
     await new Promise(resolve => renderCanvas.loadFromJSON(templateJSON, resolve));
-    
     const objects = renderCanvas.getObjects();
     
     for (let obj of objects) {
@@ -559,45 +584,38 @@ async function generatePrintPreview() {
       if (binding === 'COMPARE_PRICE') val = variant.compare_at_price || p.compare_at_price || '';
       if (binding === 'VENDOR') val = p.vendor || '';
       
-      // Metafield Extraction
       if (binding.includes('METAFIELD') && obj.metafieldKey) {
         const keyParts = obj.metafieldKey.split('.');
         val = `[Metafield: ${obj.metafieldKey}]`; 
-        try {
-            if(p[keyParts[1]]) val = p[keyParts[1]]; 
-        } catch(e){}
+        try { if(p[keyParts[1]]) val = p[keyParts[1]]; } catch(e){}
       }
 
-      // Apply Text
       if (obj.type === 'i-text' || obj.type === 'textbox') {
         if(binding === 'BARCODE' && val) val = variant.barcode || variant.sku || '';
         obj.set('text', String(val));
       }
       
-      // Apply Dynamic Images / Barcodes / QRs
       if (obj.type === 'image' || obj.type === 'rect') {
         if (binding === 'PRODUCT_IMAGE' && p.images && p.images.length > 0) {
-          await replaceFabricImage(renderCanvas, obj, p.images[0].src);
+          await replaceFabricImage(renderCanvas, obj, p.images[0].src, true);
         }
         else if (binding === 'BARCODE') {
           const bcVal = variant.barcode || variant.sku || '00000';
           const bcCanvas = document.getElementById('hiddenBarcode');
           try {
             JsBarcode(bcCanvas, bcVal, { format: "CODE128", displayValue: false, margin: 0, height: 60 });
-            await replaceFabricImage(renderCanvas, obj, bcCanvas.toDataURL());
+            await replaceFabricImage(renderCanvas, obj, bcCanvas.toDataURL(), false);
           } catch(e){}
         }
         else if (binding === 'QR_PRODUCT_URL') {
            const qrUrl = storeDomain ? `https://${storeDomain}/products/${p.handle}` : `https://${p.handle}`;
            const b64 = await generateQRCodeBase64(qrUrl);
-           if(b64) await replaceFabricImage(renderCanvas, obj, b64);
+           if(b64) await replaceFabricImage(renderCanvas, obj, b64, false);
         }
       }
     }
 
     renderCanvas.renderAll();
-    
-    // Export at 3x multiplier for high print resolution (CORS Safe)
     const dataUrl = renderCanvas.toDataURL({ format: 'png', multiplier: 3 });
     
     const cell = document.createElement('div');
@@ -611,11 +629,13 @@ async function generatePrintPreview() {
   document.getElementById('previewStatus').innerText = `Generated ${flatQueue.length} labels successfully.`;
 }
 
-function replaceFabricImage(canvasCtx, oldObj, url) {
+function replaceFabricImage(canvasCtx, oldObj, url, isExternalURL = false) {
   return new Promise(resolve => {
+    const opts = {};
+    if (isExternalURL) opts.crossOrigin = 'anonymous';
+
     fabric.Image.fromURL(url, function(img) {
       if(!img) { resolve(); return; }
-      // Retain original dimensions/position
       img.set({
         left: oldObj.left, top: oldObj.top,
         scaleX: (oldObj.width * oldObj.scaleX) / img.width,
@@ -625,7 +645,7 @@ function replaceFabricImage(canvasCtx, oldObj, url) {
       canvasCtx.remove(oldObj);
       canvasCtx.add(img);
       resolve();
-    }, { crossOrigin: 'anonymous' }); // Fixed: Crucial for printing external Shopify Images
+    }, opts);
   });
 }
 
@@ -660,7 +680,7 @@ async function doSearch(q) {
       div.onclick = () => { addToQueue(p); el.classList.remove('open'); document.getElementById('searchInput').value=''; };
       el.appendChild(div);
     });
-  } catch(e) { el.innerHTML = `<div style="padding:10px;color:var(--danger);font-size:12px;">Error</div>`; }
+  } catch(e) { el.innerHTML = `<div style="padding:10px;color:var(--danger);font-size:12px;">Error connecting to worker.</div>`; }
 }
 
 function addToQueue(p) {
@@ -689,13 +709,15 @@ function renderQueue() {
 }
 function clearQueue() { queue = []; renderQueue(); document.getElementById('labelSheet').innerHTML = '';}
 
-// CONFIG MODAL
 function openModal() { document.getElementById('cfgWorkerUrl').value=workerUrl; document.getElementById('cfgStoreDomain').value=storeDomain; document.getElementById('modalOverlay').classList.add('open'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 function saveConfig() {
   workerUrl = document.getElementById('cfgWorkerUrl').value.trim();
   storeDomain = document.getElementById('cfgStoreDomain').value.trim();
-  localStorage.setItem('slp_worker_url', workerUrl); localStorage.setItem('slp_store_domain', storeDomain);
+  try {
+    localStorage.setItem('slp_worker_url', workerUrl); 
+    localStorage.setItem('slp_store_domain', storeDomain);
+  } catch(e){}
   closeModal(); toast('Saved', 'success');
 }
 
