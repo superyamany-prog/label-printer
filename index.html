@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shopify Label Printer Pro</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js" defer></script>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
   
@@ -22,7 +26,7 @@
   }
   
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh; overflow:hidden;}
 
   /* System Error Banner */
   #sysError { display:none; background:var(--danger); color:white; padding:12px; text-align:center; font-weight:bold; font-size:13px; z-index:9999; position:fixed; top:0; left:0; width:100%; box-shadow:0 4px 12px rgba(0,0,0,0.5); }
@@ -36,7 +40,7 @@
 
   .app{display:flex; height:calc(100vh - 61px);}
 
-  /* ── SIDEBAR (Search, Queue, Setup) ── */
+  /* ── SIDEBAR ── */
   .sidebar{width: 320px; border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface);flex-shrink:0;}
   .sidebar-section{padding:16px;border-bottom:1px solid var(--border);}
   .sidebar-section h3{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;}
@@ -327,19 +331,7 @@
   <canvas id="renderCanvas"></canvas>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
-
 <script>
-// Attach Global Error Handler for debugging
-window.onerror = function(msg, url, lineNo, columnNo, error) {
-  var errEl = document.getElementById('sysError');
-  errEl.style.display = 'block';
-  errEl.innerText = 'App Error: ' + msg + ' (Line: ' + lineNo + '). Please check browser console.';
-  return false;
-};
-
 // ═══════════════════════════════════════════════
 //  STATE & SAFELOAD INITIALIZATION
 // ═══════════════════════════════════════════════
@@ -349,17 +341,19 @@ let storeDomain = '';
 let queue = [];
 const MM2PX = 3.7795275591; // 96 DPI
 
-// Safely retrieve from local storage
+// Safely retrieve from local storage AND strip trailing slashes immediately
 try {
-  workerUrl = localStorage.getItem('slp_worker_url') || '';
-  storeDomain = localStorage.getItem('slp_store_domain') || '';
+  workerUrl = (localStorage.getItem('slp_worker_url') || '').replace(/\/$/, '');
+  storeDomain = (localStorage.getItem('slp_store_domain') || '').replace(/^https?:\/\//,'').replace(/\/$/,'');
 } catch (e) {
   console.warn("Local storage disabled by browser strict mode.");
 }
 
-// Initialize Logic ONLY after the DOM is ready
-window.addEventListener('DOMContentLoaded', () => {
+// Window.onload guarantees all external JS libraries have fully downloaded before executing
+window.onload = function() {
   try {
+    if (typeof fabric === 'undefined') throw new Error("Fabric.js failed to load. Check your internet connection or adblocker.");
+    
     canvas = new fabric.Canvas('labelCanvas', { preserveObjectStacking: true });
     
     // Custom JSON exporter binding
@@ -379,9 +373,9 @@ window.addEventListener('DOMContentLoaded', () => {
     setupCanvasEvents();
   } catch (err) {
     document.getElementById('sysError').style.display = 'block';
-    document.getElementById('sysError').innerText = 'Critical Canvas Load Error: ' + err.message;
+    document.getElementById('sysError').innerText = 'System Load Error: ' + err.message;
   }
-});
+};
 
 function switchTab(tabId, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -652,9 +646,14 @@ function replaceFabricImage(canvasCtx, oldObj, url, isExternalURL = false) {
 // ═══════════════════════════════════════════════
 //  API & QUEUE UTILS 
 // ═══════════════════════════════════════════════
+
+// The API Fetcher now explicitly checks for error responses to prevent background crashes
 async function workerGet(path) {
+  if (!workerUrl) { openModal(); throw new Error('Worker URL not configured'); }
   const res  = await fetch(`${workerUrl}${path}`);
-  return await res.json();
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
 }
 
 let searchTimer = null;
@@ -672,6 +671,12 @@ async function doSearch(q) {
   try {
     const data = await workerGet(`/search?q=${encodeURIComponent(q)}`);
     el.innerHTML = '';
+    
+    if (!data.products || !data.products.length) {
+      el.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--text-muted);">No products found.</div>';
+      return;
+    }
+
     data.products.forEach(p => {
       const img = p.images?.[0]?.src || '';
       const div = document.createElement('div');
@@ -680,7 +685,10 @@ async function doSearch(q) {
       div.onclick = () => { addToQueue(p); el.classList.remove('open'); document.getElementById('searchInput').value=''; };
       el.appendChild(div);
     });
-  } catch(e) { el.innerHTML = `<div style="padding:10px;color:var(--danger);font-size:12px;">Error connecting to worker.</div>`; }
+  } catch(e) { 
+    // This will now cleanly catch formatting/404 errors without infinitely spinning
+    el.innerHTML = `<div style="padding:10px;color:var(--danger);font-size:12px;">Error: ${e.message}</div>`; 
+  }
 }
 
 function addToQueue(p) {
@@ -707,13 +715,19 @@ function renderQueue() {
     list.appendChild(div);
   });
 }
+
 function clearQueue() { queue = []; renderQueue(); document.getElementById('labelSheet').innerHTML = '';}
 
 function openModal() { document.getElementById('cfgWorkerUrl').value=workerUrl; document.getElementById('cfgStoreDomain').value=storeDomain; document.getElementById('modalOverlay').classList.add('open'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+// ── Formatting Safety Re-Added Here ──
 function saveConfig() {
-  workerUrl = document.getElementById('cfgWorkerUrl').value.trim();
-  storeDomain = document.getElementById('cfgStoreDomain').value.trim();
+  let u = document.getElementById('cfgWorkerUrl').value.trim().replace(/\/$/, '');
+  let d = document.getElementById('cfgStoreDomain').value.trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
+  if (!u) { toast('Please enter your Worker URL.', 'error'); return; }
+  workerUrl = u;
+  storeDomain = d;
   try {
     localStorage.setItem('slp_worker_url', workerUrl); 
     localStorage.setItem('slp_store_domain', storeDomain);
