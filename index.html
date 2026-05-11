@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shopify Label Printer Pro</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
@@ -332,8 +332,16 @@
 </div>
 
 <script>
+// Attach Global Error Handler for debugging
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  var errEl = document.getElementById('sysError');
+  errEl.style.display = 'block';
+  errEl.innerText = 'System Error: ' + msg;
+  return false;
+};
+
 // ═══════════════════════════════════════════════
-//  STATE & SAFELOAD INITIALIZATION
+//  STATE & INITIALIZATION
 // ═══════════════════════════════════════════════
 let canvas;
 let workerUrl = '';
@@ -341,7 +349,7 @@ let storeDomain = '';
 let queue = [];
 const MM2PX = 3.7795275591; // 96 DPI
 
-// Safely retrieve from local storage AND strip trailing slashes immediately
+// Safely retrieve from local storage and ensure proper URL formatting
 try {
   workerUrl = (localStorage.getItem('slp_worker_url') || '').replace(/\/$/, '');
   storeDomain = (localStorage.getItem('slp_store_domain') || '').replace(/^https?:\/\//,'').replace(/\/$/,'');
@@ -349,11 +357,13 @@ try {
   console.warn("Local storage disabled by browser strict mode.");
 }
 
-// Window.onload guarantees all external JS libraries have fully downloaded before executing
-window.onload = function() {
+// DOMContentLoaded guarantees the HTML is ready and synchronous scripts are fully loaded
+window.addEventListener('DOMContentLoaded', () => {
   try {
-    if (typeof fabric === 'undefined') throw new Error("Fabric.js failed to load. Check your internet connection or adblocker.");
-    
+    if (typeof fabric === 'undefined') {
+      throw new Error("Fabric.js failed to load. The CDN might be blocked by an extension, or you need to clear your browser cache.");
+    }
+
     canvas = new fabric.Canvas('labelCanvas', { preserveObjectStacking: true });
     
     // Custom JSON exporter binding
@@ -373,9 +383,9 @@ window.onload = function() {
     setupCanvasEvents();
   } catch (err) {
     document.getElementById('sysError').style.display = 'block';
-    document.getElementById('sysError').innerText = 'System Load Error: ' + err.message;
+    document.getElementById('sysError').innerText = 'App Initialization Error: ' + err.message;
   }
-};
+});
 
 function switchTab(tabId, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -647,10 +657,15 @@ function replaceFabricImage(canvasCtx, oldObj, url, isExternalURL = false) {
 //  API & QUEUE UTILS 
 // ═══════════════════════════════════════════════
 
-// The API Fetcher now explicitly checks for error responses to prevent background crashes
+// The API Fetcher checks for formatted URLs and handles errors gracefully
 async function workerGet(path) {
   if (!workerUrl) { openModal(); throw new Error('Worker URL not configured'); }
-  const res  = await fetch(`${workerUrl}${path}`);
+  
+  // Format URL dynamically if missing https
+  let finalUrl = workerUrl;
+  if (!finalUrl.startsWith('http')) finalUrl = 'https://' + finalUrl;
+
+  const res  = await fetch(`${finalUrl}${path}`);
   const data = await res.json();
   if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
@@ -686,8 +701,7 @@ async function doSearch(q) {
       el.appendChild(div);
     });
   } catch(e) { 
-    // This will now cleanly catch formatting/404 errors without infinitely spinning
-    el.innerHTML = `<div style="padding:10px;color:var(--danger);font-size:12px;">Error: ${e.message}</div>`; 
+    el.innerHTML = `<div style="padding:10px;color:var(--danger);font-size:12px;">Worker Error: ${e.message}</div>`; 
   }
 }
 
@@ -721,11 +735,11 @@ function clearQueue() { queue = []; renderQueue(); document.getElementById('labe
 function openModal() { document.getElementById('cfgWorkerUrl').value=workerUrl; document.getElementById('cfgStoreDomain').value=storeDomain; document.getElementById('modalOverlay').classList.add('open'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 
-// ── Formatting Safety Re-Added Here ──
 function saveConfig() {
   let u = document.getElementById('cfgWorkerUrl').value.trim().replace(/\/$/, '');
   let d = document.getElementById('cfgStoreDomain').value.trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
   if (!u) { toast('Please enter your Worker URL.', 'error'); return; }
+  
   workerUrl = u;
   storeDomain = d;
   try {
