@@ -7,7 +7,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fabric@5.3.1/dist/fabric.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
@@ -357,7 +357,7 @@ try {
 
 window.addEventListener('DOMContentLoaded', () => {
   try {
-    if (typeof fabric === 'undefined') throw new Error("Fabric.js failed to load.");
+    if (typeof fabric === 'undefined') throw new Error("Fabric.js failed to load. Please check your internet connection.");
 
     canvas = new fabric.Canvas('labelCanvas', { preserveObjectStacking: true });
     
