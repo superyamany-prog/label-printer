@@ -11,6 +11,850 @@
 :root{--bg:#111;--s1:#1a1a1a;--s2:#222;--s3:#2a2a2a;--bd:#303030;--acc:#e8ff4d;--grn:#4dffb4;--red:#ff4d4d;--txt:#eee;--mut:#777;--r:5px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+header{height:50px;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--acc);letter-spacing:2px;}
+.hsep{flex:1;}
+.hbtn{background:none;border:1px solid var(--bd);color:var(--mut);padding:5px 11px;border-radius:var(--r);cursor:pointer;font-size:11px;font-family:'IBM Plex Mono',monospace;transition:all .15s;white-space:nowrap;}
+.hbtn:hover{border-color:var(--acc);color:var(--acc);}
+.hbtn.on{background:var(--acc);color:#000;border-color:var(--acc);}
+.hbtn.pbtn{background:var(--acc);color:#000;border-color:var(--acc);font-weight:600;}
+.hbtn.pbtn:hover{background:#d4eb2e;}
+.shell{display:grid;grid-template-columns:270px 1fr 270px;flex:1;min-height:0;}
+.lpanel{background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;}
+.ph{padding:12px 14px;border-bottom:1px solid var(--bd);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);font-family:'IBM Plex Mono',monospace;}
+.sw{padding:10px 12px;border-bottom:1px solid var(--bd);position:relative;}
+.sw input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:7px 11px;color:var(--txt);font-size:12px;outline:none;}
+.sw input:focus{border-color:var(--acc);}
+.sw input::placeholder{color:var(--mut);}
+#sr{position:absolute;top:calc(100% - 10px);left:12px;right:12px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);z-index:300;max-height:220px;overflow-y:auto;display:none;}
+#sr.open{display:block;}
+.ri{display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .1s;}
+.ri:last-child{border-bottom:none;}
+.ri:hover{background:var(--bd);}
+.rt{width:28px;height:28px;border-radius:3px;object-fit:cover;background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.rn{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rm{font-size:10px;color:var(--mut);}
+#ql{flex:1;overflow-y:auto;padding:8px;}
+#ql:empty::after{content:'Search for products above';color:var(--mut);font-size:11px;display:block;text-align:center;padding:20px 8px;}
+.qi{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:9px;margin-bottom:5px;}
+.qih{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;}
+.qit{width:28px;height:28px;border-radius:3px;object-fit:cover;background:var(--bg);flex-shrink:0;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.qin{font-size:11px;font-weight:500;line-height:1.3;flex:1;}
+.qrm{background:none;border:none;color:var(--mut);cursor:pointer;font-size:14px;flex-shrink:0;}
+.qrm:hover{color:var(--red);}
+.qirow{display:flex;gap:5px;align-items:center;}
+.qisel{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:3px;color:var(--txt);font-size:10px;padding:4px 6px;outline:none;}
+.qw{display:flex;align-items:center;border:1px solid var(--bd);border-radius:3px;overflow:hidden;}
+.qb{background:var(--bg);border:none;color:var(--txt);width:22px;height:22px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.qb:hover{background:var(--bd);}
+.qi-num{background:var(--bg);border:none;border-left:1px solid var(--bd);border-right:1px solid var(--bd);color:var(--txt);width:30px;text-align:center;font-size:11px;height:22px;outline:none;}
+.la{padding:10px 12px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:6px;}
+.btn{padding:8px 12px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;width:100%;font-family:'IBM Plex Sans',sans-serif;}
+.btn-p{background:var(--acc);color:#000;}
+.btn-p:hover{background:#d4eb2e;}
+.btn-p:disabled{background:var(--bd);color:var(--mut);cursor:not-allowed;}
+.btn-s{background:var(--s2);color:var(--mut);border:1px solid var(--bd);}
+.btn-s:hover{color:var(--txt);}
+.cpanel{display:flex;flex-direction:column;overflow:hidden;background:#181818;}
+.sz-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;background:var(--s2);border-bottom:1px solid var(--bd);font-size:11px;flex-shrink:0;}
+.sz-bar label{color:var(--mut);white-space:nowrap;}
+.sz-inp{background:var(--bg);border:1px solid var(--bd);border-radius:3px;color:var(--txt);font-size:11px;padding:3px 6px;font-family:'IBM Plex Mono',monospace;outline:none;width:55px;text-align:right;}
+.sz-inp:focus{border-color:var(--acc);}
+#cv-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:20px;}
+#cv{position:relative;background:white;box-shadow:0 4px 32px rgba(0,0,0,.7);cursor:default;}
+#cv.grid-on::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(80,80,200,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(80,80,200,.06) 1px,transparent 1px);background-size:10px 10px;}
+.de{position:absolute;cursor:move;user-select:none;}
+.de .deb{position:absolute;inset:0;border:1px dashed transparent;transition:border-color .1s;pointer-events:none;}
+.de:hover .deb{border-color:rgba(100,150,255,.45);}
+.de.sel .deb{border-color:#4d8fff;border-style:solid;}
+.de .rh{position:absolute;bottom:-4px;right:-4px;width:8px;height:8px;background:#4d8fff;border-radius:1px;cursor:se-resize;display:none;z-index:2;}
+.de.sel .rh{display:block;}
+.de .dh{position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#ff4d4d;border-radius:50%;color:white;font-size:10px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:3;line-height:1;}
+.de.sel .dh{display:flex;}
+.rpanel{background:var(--s1);border-left:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;}
+.add-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px;}
+.add-btn{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 6px;cursor:pointer;text-align:center;transition:all .15s;color:var(--txt);}
+.add-btn:hover{border-color:var(--acc);color:var(--acc);}
+.ab-icon{font-size:18px;display:block;margin-bottom:3px;}
+.ab-label{font-size:10px;color:var(--mut);}
+.add-btn:hover .ab-label{color:var(--acc);}
+.props{flex:1;overflow-y:auto;}
+.ps{padding:12px 14px;border-top:1px solid var(--bd);}
+.ps:first-child{border-top:none;}
+.ps h4{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;}
+.pr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:8px;}
+.pr label{font-size:11px;color:var(--mut);white-space:nowrap;flex-shrink:0;}
+.pi{background:var(--s2);border:1px solid var(--bd);border-radius:3px;color:var(--txt);font-size:11px;padding:4px 8px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .15s;}
+.pi:focus{border-color:var(--acc);}
+.pi.w90{width:90px;text-align:right;}
+.pi.full{width:100%;}
+.pi.col{width:36px;height:24px;padding:1px 2px;cursor:pointer;}
+.pi-sel{background:var(--s2);border:1px solid var(--bd);border-radius:3px;color:var(--txt);font-size:11px;padding:4px 8px;outline:none;width:100%;cursor:pointer;}
+.pi-sel:focus{border-color:var(--acc);}
+.pi-chk{width:14px;height:14px;cursor:pointer;accent-color:var(--acc);}
+.abtns{display:flex;gap:4px;}
+.abtn{background:var(--s2);border:1px solid var(--bd);border-radius:3px;color:var(--mut);padding:3px 8px;cursor:pointer;font-size:12px;transition:all .1s;}
+.abtn.on{background:var(--acc);color:#000;border-color:var(--acc);}
+.mf-sub{background:var(--s3);border-radius:3px;padding:8px 10px;margin-top:6px;}
+.mf-sub label{display:block;font-size:10px;color:var(--mut);margin-bottom:4px;}
+.hint{font-size:10px;color:var(--mut);line-height:1.5;margin-top:4px;}
+.del-btn{width:100%;margin-top:4px;background:none;border:1px solid var(--red);color:var(--red);border-radius:var(--r);padding:6px;font-size:11px;cursor:pointer;transition:all .15s;}
+.del-btn:hover{background:var(--red);color:white;}
+.no-sel{padding:24px 14px;color:var(--mut);font-size:11px;text-align:center;line-height:1.7;}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:center;justify-content:center;}
+.mo.open{display:flex;}
+.md{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:24px;width:440px;max-width:95vw;}
+.md h2{font-size:14px;font-weight:600;margin-bottom:4px;}
+.md p{font-size:11px;color:var(--mut);margin-bottom:18px;line-height:1.6;}
+.mf{margin-bottom:12px;}
+.mf label{display:block;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+.mf input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:8px 11px;color:var(--txt);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;}
+.mf input:focus{border-color:var(--acc);}
+.mf .hint{font-size:10px;color:var(--mut);margin-top:3px;}
+.mda{display:flex;gap:8px;margin-top:16px;}
+.mda .btn{flex:1;}
+.btn-c{background:var(--s2);color:var(--mut);border:1px solid var(--bd);}
+#psheet{display:none;}
+#toast{position:fixed;bottom:16px;right:16px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:9px 14px;font-size:12px;z-index:2000;opacity:0;transform:translateY(40px);transition:all .25s;max-width:260px;}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast.ok{border-color:var(--grn);color:var(--grn);}
+#toast.err{border-color:var(--red);color:var(--red);}
+.spin{width:11px;height:11px;border:2px solid var(--bd);border-top-color:var(--acc);border-radius:50%;animation:spin .5s linear infinite;display:inline-block;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── FIX 5: Print — do NOT hide body; only hide layout elements ── */
+@media print{
+  header,.shell,.mo,#toast{display:none!important;}
+  body{display:block!important;overflow:visible!important;height:auto!important;background:white;}
+  #psheet{display:block!important;}
+  @page{size:A4;margin:0;}
+}
+</style>
+</head>
+<body>
+
+<div class="mo" id="mo">
+  <div class="md">
+    <h2>Configuration</h2>
+    <p>Enter your Cloudflare Worker URL and public store domain.</p>
+    <div class="mf"><label>Cloudflare Worker URL</label><input id="cfW" placeholder="https://your-worker.workers.dev"/></div>
+    <div class="mf"><label>Public Store Domain</label><input id="cfD" placeholder="your-store.com"/><div class="hint">Used for QR code product links</div></div>
+    <div class="mda">
+      <button class="btn btn-c" onclick="closeMo()">Cancel</button>
+      <button class="btn btn-p" onclick="saveCfg()">Save</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <span class="logo">LABEL PRINTER</span>
+  <div class="hsep"></div>
+  <button class="hbtn on" id="tabD" onclick="setTab('design')">Designer</button>
+  <button class="hbtn" id="tabP" onclick="setTab('preview')">Preview</button>
+  <button class="hbtn" id="gridBtn" onclick="toggleGrid()">Grid</button>
+  <button class="hbtn" onclick="openMo()">⚙ Config</button>
+  <button class="hbtn pbtn" onclick="doPrint()">🖨 Print</button>
+</header>
+
+<div class="shell">
+  <div class="lpanel">
+    <div class="ph">Products</div>
+    <div class="sw">
+      <input id="si" placeholder="Search products…" autocomplete="off"/>
+      <div id="sr"></div>
+    </div>
+    <div id="ql"></div>
+    <div class="la">
+      <button class="btn btn-p" id="genBtn" onclick="buildLabels()" disabled>Generate Labels</button>
+      <button class="btn btn-s" onclick="clearQ()">Clear Queue</button>
+    </div>
+  </div>
+
+  <div class="cpanel">
+    <div class="sz-bar">
+      <label>W(mm)</label><input class="sz-inp" id="lw" type="number" value="63.5" step="0.5" onchange="resizeCanvas()"/>
+      <label>H(mm)</label><input class="sz-inp" id="lh" type="number" value="70" step="0.5" onchange="resizeCanvas()"/>
+      <label>Scale</label><input class="sz-inp" id="ls" type="number" value="3.6" step="0.1" onchange="resizeCanvas()"/>
+      <span style="font-size:10px;color:var(--mut);">px/mm</span>
+      <div style="flex:1;"></div>
+      <span id="lc" style="font-size:10px;color:var(--grn);font-family:'IBM Plex Mono',monospace;">0 labels</span>
+    </div>
+    <div id="cv-wrap">
+      <div id="cv" class="grid-on"></div>
+    </div>
+  </div>
+
+  <div class="rpanel">
+    <div class="ph">Add Element</div>
+    <div class="add-btns">
+      <button class="add-btn" onclick="addEl('text')"><span class="ab-icon">Tt</span><span class="ab-label">Text</span></button>
+      <button class="add-btn" onclick="addEl('barcode')"><span class="ab-icon">▌▌▌</span><span class="ab-label">Barcode</span></button>
+      <button class="add-btn" onclick="addEl('qr')"><span class="ab-icon">▪▪▪</span><span class="ab-label">QR Code</span></button>
+      <button class="add-btn" onclick="addEl('image')"><span class="ab-icon">🖼</span><span class="ab-label">Image</span></button>
+    </div>
+    <div class="ph" style="margin-top:0;">Properties</div>
+    <div class="props" id="props">
+      <div class="no-sel">Click an element on the label<br>to edit its properties.</div>
+    </div>
+  </div>
+</div>
+
+<div id="psheet"></div>
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════
+let WU=localStorage.getItem('slp_w')||'';
+let SD=localStorage.getItem('slp_d')||'';
+function openMo(){document.getElementById('cfW').value=WU;document.getElementById('cfD').value=SD;document.getElementById('mo').classList.add('open');}
+function closeMo(){document.getElementById('mo').classList.remove('open');}
+function saveCfg(){
+  const w=document.getElementById('cfW').value.trim().replace(/\/$/,'');
+  const d=document.getElementById('cfD').value.trim().replace(/^https?:\/\//,'').replace(/\/$/,'');
+  if(!w){toast('Enter Worker URL','err');return;}
+  WU=w;SD=d;localStorage.setItem('slp_w',w);localStorage.setItem('slp_d',d);
+  closeMo();toast('Saved','ok');
+}
+window.addEventListener('DOMContentLoaded',()=>{if(!WU)openMo();initCanvas();});
+
+// ════════════════════════════════════════════
+//  API
+// ════════════════════════════════════════════
+async function wFetch(path){
+  if(!WU){openMo();throw new Error('Not configured');}
+  const r=await fetch(`${WU}${path}`);
+  const d=await r.json();
+  if(!r.ok||d.error)throw new Error(d.error||`HTTP ${r.status}`);
+  return d;
+}
+
+// ════════════════════════════════════════════
+//  SEARCH
+// ════════════════════════════════════════════
+let sTimer=null;
+document.getElementById('si').addEventListener('input',function(){
+  clearTimeout(sTimer);const q=this.value.trim();
+  if(q.length<2){closeRes();return;}
+  sTimer=setTimeout(()=>doSearch(q),350);
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.sw'))closeRes();});
+function closeRes(){const el=document.getElementById('sr');el.innerHTML='';el.classList.remove('open');}
+
+async function doSearch(q){
+  const el=document.getElementById('sr');
+  el.innerHTML='<div style="padding:8px 11px;font-size:11px;color:var(--mut);"><span class="spin"></span> Searching…</div>';
+  el.classList.add('open');
+  try{
+    const d=await wFetch(`/search?q=${encodeURIComponent(q)}`);
+    el.innerHTML='';
+    if(!d.products?.length){el.innerHTML='<div style="padding:8px 11px;font-size:11px;color:var(--mut);">No products found.</div>';return;}
+    d.products.forEach(p=>{
+      const img=p.images?.[0]?.src;
+      const div=document.createElement('div');div.className='ri';
+      div.innerHTML=(img?`<img class="rt" src="${img}" loading="lazy">`:`<div class="rt">📦</div>`)
+        +`<div><div class="rn">${esc(p.title)}</div><div class="rm">${p.variants.length} variant${p.variants.length!==1?'s':''}</div></div>`;
+      div.addEventListener('click',()=>{addToQ(p);closeRes();document.getElementById('si').value='';});
+      el.appendChild(div);
+    });
+  }catch(e){el.innerHTML=`<div style="padding:8px 11px;font-size:11px;color:var(--red);">${e.message}</div>`;}
+}
+
+// ════════════════════════════════════════════
+//  QUEUE  — FIX 2: no duplicate check; same product can be added multiple times
+// ════════════════════════════════════════════
+let queue=[];
+function addToQ(p){
+  // Allow same product multiple times — each entry can have a different variant
+  queue.push({p, vid:p.variants[0].id, qty:1, uid:Date.now()+Math.random()});
+  renderQ();
+  toast(`Added: ${p.title}`,'ok');
+}
+function renderQ(){
+  const el=document.getElementById('ql');el.innerHTML='';
+  document.getElementById('genBtn').disabled=queue.length===0;
+  queue.forEach((item,i)=>{
+    const p=item.p;const img=p.images?.[0]?.src;
+    const d=document.createElement('div');d.className='qi';
+    const h=document.createElement('div');h.className='qih';
+    h.innerHTML=(img?`<img class="qit" src="${img}" loading="lazy">`:`<div class="qit">📦</div>`)
+      +`<div class="qin">${esc(p.title)}</div>`;
+    const rb=document.createElement('button');rb.className='qrm';rb.innerHTML='×';
+    rb.onclick=()=>{queue.splice(i,1);renderQ();};
+    h.appendChild(rb);d.appendChild(h);
+    const row=document.createElement('div');row.className='qirow';
+    const sel=document.createElement('select');sel.className='qisel';
+    p.variants.forEach(v=>{
+      const o=document.createElement('option');o.value=v.id;
+      o.textContent=v.title==='Default Title'?'Default':v.title;
+      if(v.id===item.vid)o.selected=true;sel.appendChild(o);
+    });
+    sel.onchange=()=>{queue[i].vid=parseInt(sel.value,10);};
+    row.appendChild(sel);
+    const qw=document.createElement('div');qw.className='qw';
+    const mi=document.createElement('button');mi.className='qb';mi.textContent='−';
+    const ni=document.createElement('input');ni.className='qi-num';ni.type='number';ni.value=item.qty;ni.min=1;
+    const pl=document.createElement('button');pl.className='qb';pl.textContent='+';
+    mi.onclick=()=>{if(queue[i].qty>1){queue[i].qty--;ni.value=queue[i].qty;}};
+    pl.onclick=()=>{queue[i].qty++;ni.value=queue[i].qty;};
+    ni.onchange=()=>{queue[i].qty=Math.max(1,parseInt(ni.value,10)||1);ni.value=queue[i].qty;};
+    qw.appendChild(mi);qw.appendChild(ni);qw.appendChild(pl);
+    row.appendChild(qw);d.appendChild(row);el.appendChild(d);
+  });
+}
+function clearQ(){queue=[];renderQ();}
+
+// ════════════════════════════════════════════
+//  CANVAS STATE
+// ════════════════════════════════════════════
+let MM=3.6,LW=63.5,LH=70;
+let ELS=[],selId=null,nid=1,gridOn=true;
+function px(v){return v*MM;}
+
+const SAMPLE={
+  title:'اسم المنتج الطويل',variantTitle:'أسود / 39.5',vendor:'Skechers',
+  sku:'BX3SKSUN7BK',barcode:'6281234567890',price:'25.000',compareAtPrice:'30.000',
+  metafields:{'custom.price_yer':'65000','custom.yer_compare':'75000','print.sizes':'39.5/41/42/43/45'},
+  variantMetafields:{},img:null,variantImg:null,qrUrl:'https://example.com/products/sample',
+};
+
+const TEXT_LINKS=['PRODUCT_NAME','VARIANT','PRICE','COMPARED_AT_PRICE','SKU','BARCODE_TEXT','VENDOR','PRODUCT_TYPE','METAFIELD_PRODUCT','METAFIELD_VARIANT','CUSTOM_TEXT','LABEL','CURRENT_DATE'];
+const BC_LINKS=['BARCODE','SKU','METAFIELD_PRODUCT','CUSTOM_BARCODE'];
+const QR_LINKS=['ONLINE_STORE_PRODUCT_URL','SKU','METAFIELD_PRODUCT','CUSTOM_QR'];
+const IMG_LINKS=['PRODUCT_IMAGE','PRODUCT_VARIANT_IMAGE'];
+function linksFor(t){return t==='text'?TEXT_LINKS:t==='barcode'?BC_LINKS:t==='qr'?QR_LINKS:IMG_LINKS;}
+
+function defaultEl(type){
+  const base={id:nid++,type,visible:true,x:5,y:5};
+  if(type==='text') return{...base,label:'Text',linkTo:'PRODUCT_NAME',metafieldKey:'',customText:'',w:30,h:8,fontSize:10,bold:false,italic:false,color:'#111111',rtl:true,align:'right',strikethrough:false,vertical:false,prefix:'',suffix:''};
+  if(type==='barcode') return{...base,label:'Barcode',linkTo:'BARCODE',metafieldKey:'',customText:'',w:10,h:22};
+  if(type==='qr') return{...base,label:'QR Code',linkTo:'ONLINE_STORE_PRODUCT_URL',metafieldKey:'',customText:'',w:16,h:16};
+  return{...base,label:'Image',linkTo:'PRODUCT_IMAGE',metafieldKey:'',w:22,h:22};
+}
+
+const DEF=[
+  {id:1,type:'text',label:'Product Name',linkTo:'PRODUCT_NAME',metafieldKey:'',customText:'',x:1,y:1,w:61,h:8,fontSize:11,bold:true,italic:false,color:'#111111',rtl:true,align:'center',strikethrough:false,vertical:false,prefix:'',suffix:'',visible:true},
+  {id:2,type:'text',label:'Variant',linkTo:'VARIANT',metafieldKey:'',customText:'',x:1,y:10,w:61,h:6,fontSize:9,bold:false,italic:false,color:'#333333',rtl:true,align:'center',strikethrough:false,vertical:false,prefix:'',suffix:'',visible:true},
+  {id:3,type:'qr',label:'QR Code',linkTo:'ONLINE_STORE_PRODUCT_URL',metafieldKey:'',customText:'',x:1,y:17,w:15,h:15,visible:true},
+  {id:4,type:'text',label:'Vendor',linkTo:'VENDOR',metafieldKey:'',customText:'',x:1,y:33,w:15,h:5,fontSize:7,bold:false,italic:false,color:'#555555',rtl:false,align:'center',strikethrough:false,vertical:false,prefix:'',suffix:'',visible:true},
+  {id:5,type:'image',label:'Product Image',linkTo:'PRODUCT_IMAGE',metafieldKey:'',x:18,y:16,w:24,h:24,visible:true},
+  {id:6,type:'text',label:'SKU',linkTo:'SKU',metafieldKey:'',customText:'',x:43,y:17,w:5,h:14,fontSize:7,bold:false,italic:false,color:'#333333',rtl:false,align:'center',strikethrough:false,vertical:true,prefix:'',suffix:'',visible:true},
+  {id:7,type:'barcode',label:'Barcode',linkTo:'BARCODE',metafieldKey:'',customText:'',x:49,y:16,w:13,h:24,visible:true},
+  {id:8,type:'text',label:'Compare Price',linkTo:'METAFIELD_PRODUCT',metafieldKey:'custom.yer_compare',customText:'',x:1,y:42,w:61,h:6,fontSize:9,bold:false,italic:false,color:'#777777',rtl:true,align:'right',strikethrough:true,vertical:false,prefix:'',suffix:' ريال',visible:true},
+  {id:9,type:'text',label:'Sale Price',linkTo:'METAFIELD_PRODUCT',metafieldKey:'custom.price_yer',customText:'',x:1,y:49,w:61,h:9,fontSize:13,bold:true,italic:false,color:'#dd0000',rtl:true,align:'right',strikethrough:false,vertical:false,prefix:'',suffix:' ريال',visible:true},
+  {id:10,type:'text',label:'Sizes Label',linkTo:'LABEL',metafieldKey:'',customText:'المقاسات المتوفرة',x:1,y:59,w:61,h:5,fontSize:7.5,bold:false,italic:false,color:'#555555',rtl:true,align:'right',strikethrough:false,vertical:false,prefix:'',suffix:'',visible:true},
+  {id:11,type:'text',label:'Sizes Value',linkTo:'METAFIELD_PRODUCT',metafieldKey:'print.sizes',customText:'',x:1,y:64,w:61,h:6,fontSize:8.5,bold:true,italic:false,color:'#111111',rtl:true,align:'right',strikethrough:false,vertical:false,prefix:'',suffix:'',visible:true},
+];
+
+function initCanvas(){
+  const sv=localStorage.getItem('slp_els');
+  if(sv){try{ELS=JSON.parse(sv);nid=Math.max(...ELS.map(e=>e.id))+1;}catch{ELS=DEF.map(e=>({...e}));nid=20;}}
+  else{ELS=DEF.map(e=>({...e}));nid=20;}
+  resizeCanvas();
+}
+function saveEls(){localStorage.setItem('slp_els',JSON.stringify(ELS));}
+
+function resizeCanvas(){
+  LW=parseFloat(document.getElementById('lw').value)||63.5;
+  LH=parseFloat(document.getElementById('lh').value)||70;
+  MM=parseFloat(document.getElementById('ls').value)||3.6;
+  ensureCanvas();
+  const cv=document.getElementById('cv');
+  cv.style.width=px(LW)+'px';cv.style.height=px(LH)+'px';
+  renderCanvas();
+}
+
+// ── FIX 3: ensure #cv exists before rendering ──
+function ensureCanvas(){
+  if(!document.getElementById('cv')){
+    const wrap=document.getElementById('cv-wrap');
+    wrap.innerHTML='<div id="cv"></div>';
+    const cv=document.getElementById('cv');
+    if(gridOn)cv.classList.add('grid-on');
+  }
+}
+
+// ════════════════════════════════════════════
+//  DATA RESOLUTION
+// ════════════════════════════════════════════
+function resolveVal(el,data){
+  const mf=data.metafields||{};
+  const vmf=data.variantMetafields||{};
+  switch(el.linkTo){
+    case 'PRODUCT_NAME':  return data.title||'';
+    case 'VARIANT':       return data.variantTitle||'';
+    case 'PRICE':         return data.price||'';
+    case 'COMPARED_AT_PRICE': return data.compareAtPrice||'';
+    case 'SKU':           return data.sku||'';
+    case 'BARCODE_TEXT':
+    case 'BARCODE':       return data.barcode||'';
+    case 'VENDOR':        return data.vendor||'';
+    case 'PRODUCT_TYPE':  return data.productType||'';
+    case 'METAFIELD_PRODUCT': return mf[el.metafieldKey||'']||'';
+    case 'METAFIELD_VARIANT': return vmf[el.metafieldKey||'']||'';
+    case 'CUSTOM_TEXT':
+    case 'CUSTOM_BARCODE':
+    case 'CUSTOM_QR':
+    case 'LABEL':         return el.customText||'';
+    case 'CURRENT_DATE':  return new Date().toLocaleDateString('ar-OM');
+    case 'ONLINE_STORE_PRODUCT_URL': return data.qrUrl||'';
+    case 'PRODUCT_IMAGE': return data.img||'';
+    case 'PRODUCT_VARIANT_IMAGE': return data.variantImg||data.img||''; // FIX 1
+    default: return '';
+  }
+}
+
+// ════════════════════════════════════════════
+//  ELEMENT HTML
+// ════════════════════════════════════════════
+function getElHTML(el,data){
+  const val=resolveVal(el,data);
+  const fs=(el.fontSize||9)+'px';
+  const fw=el.bold?'700':'400';
+  const fi=el.italic?'italic':'normal';
+  const col=el.color||'#111';
+  const dir=el.rtl?'rtl':'ltr';
+  const ta=el.align||'right';
+  const td=el.strikethrough?'line-through':'none';
+  const jc=ta==='right'?'flex-end':ta==='center'?'center':'flex-start';
+
+  if(el.type==='text'){
+    const txt=(el.prefix||'')+val+(el.suffix||'');
+    if(el.vertical){
+      return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;"><div style="font-family:Arial,sans-serif;font-size:${fs};font-weight:${fw};font-style:${fi};color:${col};white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg);">${esc(txt)}</div></div>`;
+    }
+    return `<div style="font-family:Arial,sans-serif;font-size:${fs};font-weight:${fw};font-style:${fi};color:${col};direction:${dir};text-align:${ta};text-decoration:${td};width:100%;height:100%;display:flex;align-items:center;justify-content:${jc};padding:1px 3px;overflow:hidden;">${esc(txt)}</div>`;
+  }
+  if(el.type==='image'){
+    return val?`<img src="${val}" style="width:100%;height:100%;object-fit:contain;">`
+      :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;font-size:24px;">🖼️</div>`;
+  }
+  if(el.type==='qr'){
+    const uid=`qr_${el.id}_${Math.random().toString(36).slice(2,6)}`;
+    return `<div id="${uid}" style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa;">QR</div>`;
+  }
+  if(el.type==='barcode'){
+    // FIX 4a: rotated inner container — inner is el.h × el.w, rotated 90° → appears el.w × el.h
+    const uid=`bc_${el.id}_${Math.random().toString(36).slice(2,6)}`;
+    return `<div style="position:relative;width:100%;height:100%;overflow:hidden;"><div id="${uid}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);width:${px(el.h)}px;height:${px(el.w)}px;overflow:hidden;background:transparent;"></div></div>`;
+  }
+  return '';
+}
+
+// ════════════════════════════════════════════
+//  RENDER BARCODE — shared helper
+// ════════════════════════════════════════════
+function renderBC(container, val, elW, elH){
+  // container is el.h × el.w (before rotation); elW/elH are the element mm dims
+  container.innerHTML='';
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  container.appendChild(svg);
+  try{
+    JsBarcode(svg,String(val),{
+      format:detectFmt(val),displayValue:false,margin:2,
+      background:'transparent',lineColor:'#000',
+      width:1.5,
+      height:px(elW)*0.86, // bar height = element WIDTH (because rotated)
+    });
+    // Scale SVG to fill the rotated container using viewBox
+    const nw=parseInt(svg.getAttribute('width')||'100',10);
+    const nh=parseInt(svg.getAttribute('height')||'40',10);
+    svg.setAttribute('viewBox',`0 0 ${nw} ${nh}`);
+    svg.setAttribute('width',px(elH));   // container width = element HEIGHT
+    svg.setAttribute('height',px(elW));  // container height = element WIDTH
+    svg.style.cssText='display:block;';
+  }catch(e){console.warn('BC err:',e);}
+}
+
+// ════════════════════════════════════════════
+//  RENDER QR — shared helper
+// ════════════════════════════════════════════
+function renderQR(container,val,elW,elH){
+  container.innerHTML='';
+  try{new QRCode(container,{text:String(val),width:Math.floor(px(elW)),height:Math.floor(px(elH)),colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}catch{}
+}
+
+// ════════════════════════════════════════════
+//  CANVAS RENDER
+// ════════════════════════════════════════════
+function renderCanvas(){
+  ensureCanvas();
+  const cv=document.getElementById('cv');
+  cv.style.width=px(LW)+'px';cv.style.height=px(LH)+'px';
+  cv.innerHTML='';
+  const dynQ=[];
+  ELS.forEach(el=>{
+    if(el.visible===false)return;
+    const div=makeDOMEl(el,SAMPLE,true);
+    cv.appendChild(div);
+    if(el.type==='qr'||el.type==='barcode') dynQ.push(el);
+  });
+  setTimeout(()=>{
+    dynQ.forEach(el=>{
+      const domEl=document.getElementById('de_'+el.id);if(!domEl)return;
+      if(el.type==='qr'){
+        const v=resolveVal(el,SAMPLE);if(!v)return;
+        const c=domEl.querySelector('[id^="qr_"]');if(!c)return;
+        renderQR(c,v,el.w,el.h);
+      }
+      if(el.type==='barcode'){
+        const v=resolveVal(el,SAMPLE);if(!v)return;
+        const c=domEl.querySelector('[id^="bc_"]');if(!c)return;
+        renderBC(c,v,el.w,el.h);
+      }
+    });
+  },80);
+}
+
+function makeDOMEl(el,data,designer){
+  const div=document.createElement('div');
+  div.className='de'+(el.id===selId?' sel':'');
+  div.id='de_'+el.id;
+  div.style.cssText=`left:${px(el.x)}px;top:${px(el.y)}px;width:${px(el.w)}px;height:${px(el.h)}px;`;
+  const brd=document.createElement('div');brd.className='deb';div.appendChild(brd);
+  const inner=document.createElement('div');
+  inner.style.cssText='position:absolute;inset:0;overflow:hidden;';
+  inner.innerHTML=getElHTML(el,data);
+  div.appendChild(inner);
+  if(designer){
+    const rh=document.createElement('div');rh.className='rh';div.appendChild(rh);
+    const dh=document.createElement('div');dh.className='dh';dh.innerHTML='×';
+    dh.onclick=e=>{e.stopPropagation();deleteEl(el.id);};div.appendChild(dh);
+    makeDraggable(div,el,rh);
+    div.addEventListener('mousedown',e=>{if(e.target.classList.contains('rh')||e.target.classList.contains('dh'))return;selectEl(el.id);});
+  }
+  return div;
+}
+
+// ════════════════════════════════════════════
+//  DRAG & RESIZE
+// ════════════════════════════════════════════
+function makeDraggable(div,el,rh){
+  let mode=null,sx,sy,ox,oy;
+  div.addEventListener('mousedown',e=>{
+    if(e.target===rh||e.target.classList.contains('dh'))return;
+    mode='drag';sx=e.clientX;sy=e.clientY;ox=el.x;oy=el.y;e.preventDefault();
+  });
+  rh.addEventListener('mousedown',e=>{
+    mode='resize';sx=e.clientX;sy=e.clientY;ox=el.w;oy=el.h;e.preventDefault();e.stopPropagation();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!mode)return;
+    const dx=(e.clientX-sx)/MM,dy=(e.clientY-sy)/MM;
+    if(mode==='drag'){
+      el.x=Math.max(0,Math.min(LW-el.w,rnd(ox+dx)));
+      el.y=Math.max(0,Math.min(LH-el.h,rnd(oy+dy)));
+      div.style.left=px(el.x)+'px';div.style.top=px(el.y)+'px';
+      updPos(el);
+    }
+    if(mode==='resize'){
+      el.w=Math.max(4,rnd(ox+dx));el.h=Math.max(3,rnd(oy+dy));
+      div.style.width=px(el.w)+'px';div.style.height=px(el.h)+'px';
+      updSz(el);
+    }
+  });
+  document.addEventListener('mouseup',()=>{
+    if(mode){mode=null;saveEls();
+      setTimeout(()=>{
+        const domEl=document.getElementById('de_'+el.id);if(!domEl)return;
+        if(el.type==='qr'){const v=resolveVal(el,SAMPLE);if(v){const c=domEl.querySelector('[id^="qr_"]');if(c)renderQR(c,v,el.w,el.h);}}
+        if(el.type==='barcode'){const v=resolveVal(el,SAMPLE);if(v){const c=domEl.querySelector('[id^="bc_"]');if(c)renderBC(c,v,el.w,el.h);}}
+      },60);
+    }
+  });
+}
+function rnd(v){return Math.round(v*4)/4;}
+function updPos(el){
+  const ex=document.getElementById('prop_x'),ey=document.getElementById('prop_y');
+  if(ex)ex.value=el.x.toFixed(2);if(ey)ey.value=el.y.toFixed(2);
+}
+function updSz(el){
+  const ew=document.getElementById('prop_w'),eh=document.getElementById('prop_h');
+  if(ew)ew.value=el.w.toFixed(2);if(eh)eh.value=el.h.toFixed(2);
+}
+
+// ════════════════════════════════════════════
+//  SELECT & PROPERTIES
+// ════════════════════════════════════════════
+function selectEl(id){
+  selId=id;
+  document.querySelectorAll('.de').forEach(d=>d.classList.toggle('sel',d.id==='de_'+id));
+  renderProps();
+}
+function addEl(type){const el=defaultEl(type);ELS.push(el);saveEls();renderCanvas();selectEl(el.id);}
+function deleteEl(id){ELS=ELS.filter(e=>e.id!==id);if(selId===id)selId=null;saveEls();renderCanvas();renderProps();}
+function setProp(key,val){const el=ELS.find(e=>e.id===selId);if(!el)return;el[key]=val;saveEls();renderCanvas();selectEl(selId);}
+
+function renderProps(){
+  const panel=document.getElementById('props');
+  const el=ELS.find(e=>e.id===selId);
+  if(!el){panel.innerHTML='<div class="no-sel">Click an element on the label<br>to edit its properties.</div>';return;}
+  const links=linksFor(el.type);
+  const needsMF=el.linkTo==='METAFIELD_PRODUCT'||el.linkTo==='METAFIELD_VARIANT';
+  const needsCustom=['CUSTOM_TEXT','LABEL','CUSTOM_BARCODE','CUSTOM_QR'].includes(el.linkTo);
+  const isText=el.type==='text';
+  panel.innerHTML=`
+  <div class="ps">
+    <h4>Data Source</h4>
+    <div class="pr" style="flex-direction:column;align-items:stretch;gap:4px;">
+      <label>Link to</label>
+      <select class="pi-sel" onchange="setProp('linkTo',this.value)">
+        ${links.map(l=>`<option value="${l}"${el.linkTo===l?' selected':''}>${l.replace(/_/g,' ')}</option>`).join('')}
+      </select>
+    </div>
+    ${needsMF?`<div class="mf-sub"><label>Metafield namespace.key</label><input class="pi full" value="${esc(el.metafieldKey||'')}" placeholder="e.g. custom.price_yer" oninput="setProp('metafieldKey',this.value)"/><div class="hint">Enter namespace and key</div></div>`:''}
+    ${needsCustom?`<div class="mf-sub"><label>${el.linkTo==='LABEL'?'Label text':'Custom value'}</label><input class="pi full" value="${esc(el.customText||'')}" placeholder="Enter text…" oninput="setProp('customText',this.value)"/></div>`:''}
+  </div>
+  ${isText?`<div class="ps"><h4>Text Style</h4>
+    <div class="pr"><label>Prefix</label><input class="pi w90" value="${esc(el.prefix||'')}" oninput="setProp('prefix',this.value)"/></div>
+    <div class="pr"><label>Suffix</label><input class="pi w90" value="${esc(el.suffix||'')}" oninput="setProp('suffix',this.value)"/></div>
+    <div class="pr"><label>Font size (px)</label><input class="pi w90" type="number" value="${el.fontSize||9}" min="5" max="60" step="0.5" onchange="setProp('fontSize',+this.value)"/></div>
+    <div class="pr"><label>Color</label><input class="pi col" type="color" value="${el.color||'#111111'}" oninput="setProp('color',this.value)"/></div>
+    <div class="pr"><label>Bold</label><input class="pi-chk" type="checkbox" ${el.bold?'checked':''} onchange="setProp('bold',this.checked)"/></div>
+    <div class="pr"><label>Italic</label><input class="pi-chk" type="checkbox" ${el.italic?'checked':''} onchange="setProp('italic',this.checked)"/></div>
+    <div class="pr"><label>RTL</label><input class="pi-chk" type="checkbox" ${el.rtl?'checked':''} onchange="setProp('rtl',this.checked)"/></div>
+    <div class="pr"><label>Strikethrough</label><input class="pi-chk" type="checkbox" ${el.strikethrough?'checked':''} onchange="setProp('strikethrough',this.checked)"/></div>
+    <div class="pr"><label>Vertical text</label><input class="pi-chk" type="checkbox" ${el.vertical?'checked':''} onchange="setProp('vertical',this.checked)"/></div>
+    <div class="pr"><label>Align</label><div class="abtns">
+      <button class="abtn${el.align==='left'?' on':''}" onclick="setProp('align','left')">L</button>
+      <button class="abtn${el.align==='center'?' on':''}" onclick="setProp('align','center')">C</button>
+      <button class="abtn${el.align==='right'?' on':''}" onclick="setProp('align','right')">R</button>
+    </div></div>
+  </div>`:''}
+  <div class="ps"><h4>Position & Size (mm)</h4>
+    <div class="pr"><label>X</label><input class="pi w90" id="prop_x" type="number" value="${el.x.toFixed(2)}" step="0.25" onchange="setProp('x',+this.value)"/></div>
+    <div class="pr"><label>Y</label><input class="pi w90" id="prop_y" type="number" value="${el.y.toFixed(2)}" step="0.25" onchange="setProp('y',+this.value)"/></div>
+    <div class="pr"><label>Width</label><input class="pi w90" id="prop_w" type="number" value="${el.w.toFixed(2)}" step="0.25" onchange="setProp('w',+this.value)"/></div>
+    <div class="pr"><label>Height</label><input class="pi w90" id="prop_h" type="number" value="${el.h.toFixed(2)}" step="0.25" onchange="setProp('h',+this.value)"/></div>
+    <div class="pr"><label>Visible</label><input class="pi-chk" type="checkbox" ${el.visible!==false?'checked':''} onchange="setProp('visible',this.checked)"/></div>
+  </div>
+  <div class="ps">
+    <button class="del-btn" onclick="deleteEl(${el.id})">Delete Element</button>
+    <button class="del-btn" style="margin-top:6px;border-color:var(--mut);color:var(--mut);" onclick="resetLayout()">Reset to Default Layout</button>
+  </div>`;
+}
+
+function resetLayout(){
+  if(!confirm('Reset all elements to the default layout?'))return;
+  ELS=DEF.map(e=>({...e}));nid=20;selId=null;
+  saveEls();renderCanvas();renderProps();toast('Layout reset','ok');
+}
+
+// ════════════════════════════════════════════
+//  TABS — FIX 3: properly restore canvas on switch back to design
+// ════════════════════════════════════════════
+let tab='design';
+function setTab(t){
+  tab=t;
+  document.getElementById('tabD').classList.toggle('on',t==='design');
+  document.getElementById('tabP').classList.toggle('on',t==='preview');
+  if(t==='design'){
+    // Restore canvas (preview may have replaced cv-wrap contents)
+    const wrap=document.getElementById('cv-wrap');
+    wrap.innerHTML='<div id="cv"></div>';
+    const cv=document.getElementById('cv');
+    if(gridOn)cv.classList.add('grid-on');
+    resizeCanvas();
+  } else {
+    if(!labelData.length){toast('Generate labels first','err');setTab('design');return;}
+    renderPreview();
+  }
+}
+
+// FIX 3: toggleGrid safely checks if #cv exists
+function toggleGrid(){
+  gridOn=!gridOn;
+  document.getElementById('gridBtn').classList.toggle('on',gridOn);
+  const cv=document.getElementById('cv');
+  if(cv)cv.classList.toggle('grid-on',gridOn);
+}
+
+// ════════════════════════════════════════════
+//  BUILD LABEL DATA — FIX 1: add variantImg
+// ════════════════════════════════════════════
+let labelData=[];
+function buildLabels(){
+  if(!queue.length){toast('Add products first','err');return;}
+  labelData=[];
+  queue.forEach(item=>{
+    const p=item.p;
+    const v=p.variants.find(x=>x.id===item.vid)||p.variants[0];
+    const qrUrl=SD?`https://${SD}/products/${p.handle}`:'';
+    for(let i=0;i<item.qty;i++){
+      labelData.push({
+        title:p.title, variantTitle:v.title==='Default Title'?'':v.title,
+        vendor:p.vendor||'', productType:p.productType||'',
+        handle:p.handle||'', img:p.images?.[0]?.src||null,
+        variantImg:v.image||null,        // ← FIX 1: variant-specific image
+        sku:v.sku||'', barcode:v.barcode||'',
+        price:v.price||'', compareAtPrice:v.compareAtPrice||'',
+        metafields:p.metafields||{}, variantMetafields:v.metafields||{},
+        qrUrl,
+      });
+    }
+  });
+  document.getElementById('lc').textContent=`${labelData.length} label${labelData.length!==1?'s':''}`;
+  toast(`${labelData.length} labels ready`,'ok');
+  if(tab==='preview')renderPreview();
+}
+
+// ════════════════════════════════════════════
+//  PREVIEW
+// ════════════════════════════════════════════
+function renderPreview(){
+  const wrap=document.getElementById('cv-wrap');
+  wrap.innerHTML='';
+  const COLS=3,ROWS=4,ML=6,MT=8;
+  const pagesN=Math.ceil(labelData.length/(COLS*ROWS));
+  const dynQ=[];
+
+  for(let pg=0;pg<pagesN;pg++){
+    const page=document.createElement('div');
+    page.style.cssText=`position:relative;background:white;width:${210*MM}px;height:${297*MM}px;box-shadow:0 4px 28px rgba(0,0,0,.6);margin-bottom:20px;overflow:hidden;flex-shrink:0;`;
+    const slice=labelData.slice(pg*COLS*ROWS,(pg+1)*COLS*ROWS);
+    slice.forEach((lbl,i)=>{
+      const col=i%COLS,row=Math.floor(i/COLS);
+      const cell=document.createElement('div');
+      cell.style.cssText=`position:absolute;left:${(ML+col*LW)*MM}px;top:${(MT+row*LH)*MM}px;width:${px(LW)}px;height:${px(LH)}px;overflow:hidden;`;
+      ELS.forEach(el=>{
+        if(el.visible===false)return;
+        const div=document.createElement('div');
+        div.dataset.elid=el.id;
+        div.style.cssText=`position:absolute;left:${px(el.x)}px;top:${px(el.y)}px;width:${px(el.w)}px;height:${px(el.h)}px;overflow:hidden;`;
+        // FIX 4b: barcode uses rotated structure from getElHTML
+        div.innerHTML=getElHTML(el,lbl);
+        cell.appendChild(div);
+        if(el.type==='qr'||el.type==='barcode') dynQ.push({el,lbl,div});
+      });
+      page.appendChild(cell);
+    });
+    wrap.appendChild(page);
+  }
+
+  // Render dynamic content after DOM is ready
+  setTimeout(()=>{
+    dynQ.forEach(({el,lbl,div})=>{
+      const val=resolveVal(el,lbl);if(!val)return;
+      if(el.type==='qr'){
+        const c=div.querySelector('[id^="qr_"]');if(!c)return;
+        renderQR(c,val,el.w,el.h);
+      }
+      if(el.type==='barcode'){
+        // FIX 4b: find rotated container, render with correct dims
+        const c=div.querySelector('[id^="bc_"]');if(!c)return;
+        renderBC(c,val,el.w,el.h);
+      }
+    });
+  },100);
+}
+
+// ════════════════════════════════════════════
+//  PRINT — FIX 4c + FIX 5
+// ════════════════════════════════════════════
+function doPrint(){
+  if(!labelData.length){toast('Generate labels first','err');return;}
+  const sheet=document.getElementById('psheet');
+  const COLS=3,ROWS=4,ML=6,MT=8;
+  const pagesN=Math.ceil(labelData.length/(COLS*ROWS));
+  sheet.innerHTML='';
+  const dynQ=[];
+
+  for(let pg=0;pg<pagesN;pg++){
+    const page=document.createElement('div');
+    page.style.cssText='width:210mm;height:297mm;position:relative;overflow:hidden;page-break-after:always;';
+    const slice=labelData.slice(pg*COLS*ROWS,(pg+1)*COLS*ROWS);
+    slice.forEach((lbl,i)=>{
+      const col=i%COLS,row=Math.floor(i/COLS);
+      const cell=document.createElement('div');
+      cell.style.cssText=`position:absolute;left:${ML+col*LW}mm;top:${MT+row*LH}mm;width:${LW}mm;height:${LH}mm;overflow:hidden;`;
+      ELS.forEach(el=>{
+        if(el.visible===false)return;
+        const div=document.createElement('div');
+        div.style.cssText=`position:absolute;left:${el.x}mm;top:${el.y}mm;width:${el.w}mm;height:${el.h}mm;overflow:hidden;`;
+        if(el.type==='barcode'){
+          // FIX 4c: rotated barcode for print using px (will be rendered via JS)
+          const inner=document.createElement('div');
+          inner.dataset.bcfor=el.id;
+          inner.style.cssText=`position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);width:${px(el.h)}px;height:${px(el.w)}px;overflow:hidden;`;
+          div.appendChild(inner);
+          dynQ.push({type:'barcode',container:inner,el,lbl});
+        } else if(el.type==='qr'){
+          const inner=document.createElement('div');
+          inner.style.cssText='width:100%;height:100%;';
+          div.appendChild(inner);
+          dynQ.push({type:'qr',container:inner,el,lbl});
+        } else {
+          div.innerHTML=getPrintHTML(el,lbl);
+        }
+        cell.appendChild(div);
+      });
+      page.appendChild(cell);
+    });
+    sheet.appendChild(page);
+  }
+
+  setTimeout(()=>{
+    dynQ.forEach(item=>{
+      const val=resolveVal(item.el,item.lbl);if(!val)return;
+      if(item.type==='barcode') renderBC(item.container,val,item.el.w,item.el.h);
+      if(item.type==='qr') renderQR(item.container,val,item.el.w,item.el.h);
+    });
+    setTimeout(()=>window.print(),400);
+  },200);
+}
+
+function getPrintHTML(el,data){
+  if(el.type!=='text'&&el.type!=='image') return '';
+  const val=resolveVal(el,data);
+  const fs=(el.fontSize||9)*0.75+'pt';
+  const fw=el.bold?'700':'400';
+  const fi=el.italic?'italic':'normal';
+  const col=el.color||'#111';
+  const dir=el.rtl?'rtl':'ltr';
+  const ta=el.align||'right';
+  const td=el.strikethrough?'line-through':'none';
+  const jc=ta==='right'?'flex-end':ta==='center'?'center':'flex-start';
+  if(el.type==='image') return val?`<img src="${val}" style="width:100%;height:100%;object-fit:contain;">`: '';
+  const txt=(el.prefix||'')+val+(el.suffix||'');
+  if(el.vertical){
+    return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><div style="font-family:Arial;font-size:${fs};font-weight:${fw};font-style:${fi};color:${col};white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg);">${esc(txt)}</div></div>`;
+  }
+  return `<div style="font-family:Arial;font-size:${fs};font-weight:${fw};font-style:${fi};color:${col};direction:${dir};text-align:${ta};text-decoration:${td};width:100%;height:100%;display:flex;align-items:center;justify-content:${jc};padding:0.3mm 0.8mm;overflow:hidden;">${esc(txt)}</div>`;
+}
+
+// ════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════
+function detectFmt(v){
+  v=String(v||'').trim();
+  if(/^\d{13}$/.test(v))return 'EAN13';
+  if(/^\d{8}$/.test(v))return 'EAN8';
+  if(/^\d{12}$/.test(v))return 'UPC';
+  return 'CODE128';
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+let tT=null;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='show '+type;
+  clearTimeout(tT);tT=setTimeout(()=>el.className='',2800);
+}
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopify Label Printer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#111;--s1:#1a1a1a;--s2:#222;--s3:#2a2a2a;--bd:#303030;--acc:#e8ff4d;--grn:#4dffb4;--red:#ff4d4d;--txt:#eee;--mut:#777;--r:5px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 
 /* HEADER */
 header{height:50px;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;}
